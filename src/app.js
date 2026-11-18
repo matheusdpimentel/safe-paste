@@ -145,7 +145,7 @@ $('download-text').addEventListener('click', () => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = protectedTextFilename(importedTextFile?.name, { suffix: t('file.suffix'), fallbackStem: t('file.stem') });
+  link.download = protectedTextFilename(extension, t('file.suffix'));
   document.body.appendChild(link);
   link.click();
   link.remove();

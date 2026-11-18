@@ -1,398 +1,617 @@
-/** SafePaste PDF beta: client-side rasterization, automatic candidates, manual review. */
+/** Local PDF review. Only a complete, verified set of protected pixels can reach the writer. */
 const pdfUI = id => document.getElementById(id);
-const pdfState = { document: null, loadingTask: null, pages: [], index: 0, pdfjs: null, manualMode: true, previewScale: 1, dragging: null, busy: false, sourceName: '', previewTask: null };
-const MAX_PDF_BYTES = 25 * 1024 * 1024, MAX_PAGES = 30;
-const PDFJS_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/build/pdf.mjs';
-const PDFJS_WORKER_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/build/pdf.worker.mjs';
-let pdfjsPromise;
 const elPdf = Object.fromEntries([
-  'file','pick','empty','ready','name','stats','message','warning','page','prev','next',
-  'canvas','overlay','remove-layer','undo','clear','restore-auto','export','reviewed','raster','progress','restart'
-].map(k => [k,pdfUI('pdf-'+k)]));
-
+  'file', 'pick', 'empty', 'ready', 'name', 'stats', 'message', 'warning', 'page', 'prev', 'next',
+  'canvas', 'overlay', 'remove-layer', 'undo', 'clear', 'restore-auto', 'export', 'reviewed',
+  'raster', 'restart', 'close', 'cancel',
+].map(key => [key, pdfUI('pdf-' + key)]));
+const MAX_PDF_BYTES = 25 * 1024 * 1024;
+const MAX_PAGES = 30;
+const MAX_PAGE_PIXELS = 5_000_000;
+const MAX_DOCUMENT_TEXT = 500_000;
+const MAX_DOCUMENT_SEGMENTS = 50_000;
+let pdfSession = null;
+let pdfOperation = null;
+let pdfDrag = null;
 let pdfFeedback = { key: 'pdf.empty', values: {}, bad: false };
+
 function renderPDFMessage() {
   const { key, values, bad } = pdfFeedback;
-  const reason = values.error ? translatedError(values.error, i18n) : '';
+  const reason = values.errorCode ? t(values.errorCode.key, values.errorCode.values) : '';
   const message = t(key, { ...values, reason }) + (values.previous ? t('pdf.previousOpen') : '');
   for (const el of [elPdf.message, pdfUI('pdf-ready-message')]) {
-    if (!el) continue;
     el.textContent = message;
     el.classList.toggle('pdf-error', bad);
   }
 }
+
 function pdfMessage(key, values = {}, bad = false) {
   pdfFeedback = { key, values, bad };
   renderPDFMessage();
 }
+
 function switchMode(mode) {
-  const isPDF = mode === 'pdf';
-  pdfUI('text-mode').hidden = isPDF;
-  pdfUI('pdf-mode').hidden = !isPDF;
-  pdfUI('mode-text').classList.toggle('active', !isPDF);
-  pdfUI('mode-pdf').classList.toggle('active', isPDF);
-  pdfUI('mode-text').setAttribute('aria-selected', String(!isPDF));
-  pdfUI('mode-pdf').setAttribute('aria-selected', String(isPDF));
+  for (const kind of ['text', 'pdf']) {
+    const active = mode === kind;
+    pdfUI(kind + '-mode').hidden = !active;
+    pdfUI('mode-' + kind).classList.toggle('active', active);
+    pdfUI('mode-' + kind).setAttribute('aria-selected', String(active));
+  }
+  if (mode === 'pdf') resizePDFPreview();
 }
 pdfUI('mode-text').addEventListener('click', () => switchMode('text'));
 pdfUI('mode-pdf').addEventListener('click', () => switchMode('pdf'));
-function normalizeRect(r) {
-  const x = Math.min(r.x, r.x + r.w), y = Math.min(r.y, r.y + r.h);
-  return {x: Math.max(0, x), y: Math.max(0,y), w: Math.abs(r.w), h: Math.abs(r.h)};
+
+function assertPDF(condition, code = 'pdf.incomplete') {
+  if (!condition) throw new LocalizedError(code);
 }
-function boundRect(r, pw, ph) {
-  const x = Math.max(0, Math.min(pw, r.x - 3));
-  const y = Math.max(0, Math.min(ph, r.y - 3));
-  const x2 = Math.max(x, Math.min(pw, r.x + r.w + 3));
-  const y2 = Math.max(y, Math.min(ph, r.y + r.h + 3));
-  return {x, y, w:x2-x, h:y2-y};
+
+function pageGeometry(page) {
+  const base = page.getViewport({ scale: 1 });
+  const { width, height } = base;
+  assertPDF([width, height].every(n => Number.isFinite(n) && n >= 1 && n <= 6000), 'pdf.pageSize');
+  const scale = Math.min(2, 2500 / width, 3000 / height, Math.sqrt(MAX_PAGE_PIXELS / (width * height)));
+  const viewport = page.getViewport({ scale });
+  return {
+    base, viewport, width, height, scale, rotation: base.rotation,
+    pixelWidth: Math.ceil(viewport.width), pixelHeight: Math.ceil(viewport.height),
+  };
 }
-function itemBox(item, viewport, pdfjs) {
-  const transform = pdfjs.Util.transform(viewport.transform, item.transform);
-  const fontHeight = Math.max(4, Math.hypot(transform[2], transform[3]));
-  const w = Math.max(2, Math.abs(item.width));
-  const h = Math.max(fontHeight, Math.abs(item.height), 6);
-  // Conservative: cover entire text run containing the sensitive substring.
-  const x = transform[4], y = transform[5] - h;
-  if (Math.abs(transform[1]) > 0.025 || Math.abs(transform[2]) > 0.025) return null;
-  return boundRect({x,y,w,h:h*1.25}, viewport.width,viewport.height);
+
+function clamp(value, upper) {
+  return Math.max(0, Math.min(upper, value));
 }
-function extractPageSegments(items, viewport, pdfjs) {
+
+// Geometry is defined in the reviewed raster. Round outwards once for both preview and export.
+function pixelBox(x1, y1, x2, y2, geometry, margin = 0) {
+  const left = clamp(Math.floor(Math.min(x1, x2) - margin), geometry.pixelWidth);
+  const top = clamp(Math.floor(Math.min(y1, y2) - margin), geometry.pixelHeight);
+  const right = clamp(Math.ceil(Math.max(x1, x2) + margin), geometry.pixelWidth);
+  const bottom = clamp(Math.ceil(Math.max(y1, y2) + margin), geometry.pixelHeight);
+  if (![left, top, right, bottom].every(Number.isSafeInteger) || right <= left || bottom <= top) return null;
+  return { x: left, y: top, w: right - left, h: bottom - top };
+}
+
+function itemBox(item, style, geometry, lib) {
+  const { viewport, scale } = geometry;
+  const [a, b, c, d, x, y] = lib.Util.transform(viewport.transform, item.transform);
+  const tangent = Math.hypot(a, b);
+  const width = Math.abs(item.width) * scale * viewport.userUnit;
+  if (style?.vertical || ![tangent, width].every(n => Number.isFinite(n) && n > 0)) return null;
+  const advanceX = a / tangent * width;
+  const advanceY = b / tangent * width;
+  // Include ascent, descenders and a margin even when font metrics are approximate.
+  const xs = [x + c * 1.25, x - c * 0.45, x + advanceX + c * 1.25, x + advanceX - c * 0.45];
+  const ys = [y + d * 1.25, y - d * 0.45, y + advanceY + d * 1.25, y + advanceY - d * 0.45];
+  return pixelBox(Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys), geometry, 3 * scale);
+}
+
+function extractPageText(content, geometry, lib) {
   let value = '';
-  const segments=[];
-  let prev = null;
-  for(const item of items) {
-    if(typeof item.str !== 'string' || !item.str) continue;
-    const box = itemBox(item,viewport,pdfjs);
-    const gap = prev && box && Math.abs(prev.y-box.y) < 5 ? box.x - (prev.x+prev.w) : 100;
-    const sep = prev ? (gap < 2 && gap > -4 ? '' : ' ') : '';
-    value += sep;
-    const start=value.length;
+  const segments = [];
+  let previous = null;
+  for (const item of content.items) {
+    if (typeof item.str !== 'string' || !item.str) continue;
+    const box = itemBox(item, content.styles[item.fontName], geometry, lib);
+    if (previous) {
+      const [a, b,,, x, y] = item.transform;
+      const [pa, pb,,, px, py] = previous.transform;
+      const length = Math.hypot(pa, pb);
+      const dx = x - px;
+      const dy = y - py;
+      const gap = (dx * pa + dy * pb) / length - previous.width;
+      const offset = Math.abs(dx * pb - dy * pa) / length;
+      if (a !== pa || b !== pb || offset >= 5 || gap >= 2 || gap <= -4) value += ' ';
+    }
+    const start = value.length;
     value += item.str;
-    segments.push({start,end:value.length,box});
-    prev=box;
-    if(item.hasEOL) {value+='\n';prev=null;}
-  }
-  return {value,segments};
-}
-function findPDFHits(info) {
-  const detection = detectorOptions();
-  const result = sanitize(info.value, detection);
-  const boxes=[];
-  for (const hit of result.hits) {
-    for (const seg of info.segments) {
-      if (seg.box && hit.start < seg.end && hit.end > seg.start) {
-        if (!boxes.some(b=>b.segment===seg)) boxes.push({segment:seg, ...seg.box});
-      }
+    segments.push({ start, end: value.length, box });
+    previous = item;
+    if (item.hasEOL) {
+      value += '\n';
+      previous = null;
     }
   }
-  return { boxes: boxes.map(({segment,...rect}) => rect), hitCount:result.hits.length };
+  return { value, segments };
 }
-function updatePDFDetections() {
-  if(!pdfState.pages.length) return;
-  for(const page of pdfState.pages) {
-    const found=findPDFHits(page.text);
-    page.auto=found.boxes;
-    page.hitCount=found.hitCount;
-    page.viewed=false;
-  }
-  invalidateReview();
-  pdfState.pages[pdfState.index].viewed=true;
-  updatePDFMeta(); drawOverlay();
-}
-for (const input of document.querySelectorAll('[data-detector]')) input.addEventListener('change', updatePDFDetections);
-pdfUI('enable-all').addEventListener('click', () => setTimeout(updatePDFDetections,0));
-// A removed automatic suggestion stays removed even if detections are recalculated.
-// Stable geometry keys also avoid relying on indexes that can change by category.
-function autoRectKey(r) {return [r.x,r.y,r.w,r.h].map(n=>Math.round(n*100)).join(':');}
-function visibleAuto(page) {return page.auto.filter(r=>!page.dismissedAuto.has(autoRectKey(r)));}
-function totalBoxes() {return pdfState.pages.reduce((n,p)=>n+visibleAuto(p).length+p.manual.length,0);}
-function removedAutoCount() {return pdfState.pages.reduce((n,p)=>n+p.auto.filter(r=>p.dismissedAuto.has(autoRectKey(r))).length,0);}
-function invalidateReview() {elPdf.reviewed.checked=false;}
 
-function updatePDFMeta() {
-  const pages=pdfState.pages;
-  if (!pages.length) return;
-  const current=pages[pdfState.index];
-  const unviewed=pages.filter(p=>!p.viewed).length;
-  const manually=pages.reduce((n,p)=>n+p.manual.length,0);
-  const activeAutomatic=pages.reduce((n,p)=>n+visibleAuto(p).length,0);
-  const removed=removedAutoCount();
-  elPdf.stats.textContent=t('pdf.stats', { count: pages.length, automatic: activeAutomatic, manual: manually }) + (removed ? t('pdf.removedCount', { count: removed }) : '');
-  elPdf.page.textContent=t('pdf.page', { page: pdfState.index+1, total: pages.length });
-  elPdf.prev.disabled=pdfState.index===0 || pdfState.busy;
-  elPdf.next.disabled=pdfState.index===pages.length-1 || pdfState.busy;
-  elPdf.undo.disabled=pdfState.busy || !current.manual.length;
-  elPdf.clear.disabled=pdfState.busy || !pages.some(p=>p.manual.length);
-  elPdf['restore-auto'].disabled=pdfState.busy || !removed;
-  elPdf.export.disabled=pdfState.busy || !totalBoxes() || !!unviewed || !elPdf.reviewed.checked || !elPdf.raster.checked;
-  const hasNoText=!current.text.value.trim();
-  const activeOnPage=visibleAuto(current).length;
-  const discardedOnPage=current.auto.length-activeOnPage;
-  elPdf.warning.textContent = t(hasNoText ? 'pdf.noText' : activeOnPage ? 'pdf.automatic' : discardedOnPage ? 'pdf.discarded' : 'pdf.noPatterns', { count: activeOnPage });
-  if (removed) elPdf.warning.textContent += t('pdf.removedWarning', { count: removed });
-  if (unviewed) elPdf.warning.textContent += t('pdf.unviewed', { count: unviewed });
-  elPdf.warning.classList.toggle('pdf-warning-strong',hasNoText || !activeOnPage || !!unviewed || !!removed);
+function findPDFHits(info, settings) {
+  const { hits } = sanitize(info.value, settings);
+  const boxes = new Set();
+  let unmapped = false;
+  let first = 0;
+  for (const hit of hits) {
+    while (first < info.segments.length && info.segments[first].end <= hit.start) first++;
+    for (let i = first; i < info.segments.length && info.segments[i].start < hit.end; i++) {
+      const { box } = info.segments[i];
+      if (box) boxes.add(box);
+      else unmapped = true;
+    }
+  }
+  return { auto: [...boxes], unmapped };
 }
-async function ensurePdfjs() {
-  if(!pdfjsPromise) pdfjsPromise = import(PDFJS_URL).then(lib => {
-    lib.GlobalWorkerOptions.workerSrc=PDFJS_WORKER_URL;
-    return lib;
-  }).catch(error => {pdfjsPromise=null;throw new LocalizedError('pdf.readerError');});
-  return pdfjsPromise;
-}
-function setBusy(busy) {
-  pdfState.busy=busy;
-  elPdf.pick.disabled=busy;
-  elPdf.file.disabled=busy;
-  elPdf.restart.disabled=busy;
+
+const currentPDFPage = () => pdfSession?.pages[pdfSession.index];
+const autoRectKey = rect => [rect.x, rect.y, rect.w, rect.h].join(':');
+const visibleAuto = page => page.auto.filter(rect => !page.dismissedAuto.has(autoRectKey(rect)));
+const activeRects = page => [...visibleAuto(page), ...page.manual];
+const invalidatePDFReview = () => { elPdf.reviewed.checked = false; };
+
+function updatePDFDetections() {
+  if (!pdfSession || pdfSession.failed) return;
+  if (pdfOperation?.exporting) pdfOperation.abort(new LocalizedError('pdf.cancelled'));
+  const settings = detectorOptions();
+  for (const page of pdfSession.pages) {
+    Object.assign(page, findPDFHits(page.text, settings));
+    if (page !== currentPDFPage()) page.approvalDigest = null;
+  }
+  invalidatePDFReview();
+  drawPDFOverlay();
   updatePDFMeta();
 }
-function pageViewportFor(canvas,base,limit=1500) {
-  const displayWidth=Math.min(790, Math.max(250, elPdf.canvas.parentElement.parentElement.clientWidth-42));
-  const scale=Math.min(1.7, displayWidth/base.width, limit/base.width, limit/base.height);
-  return Math.max(0.15,scale);
-}
-async function showPDFPage(index, allowWhileBusy = false) {
-  if(!pdfState.document || (pdfState.busy && !allowWhileBusy)) return;
-  pdfState.index=index;
-  const info=pdfState.pages[index];
-  const page=await pdfState.document.getPage(index+1);
-  const scale=pageViewportFor(elPdf.canvas,info);
-  const viewport=page.getViewport({scale});
-  pdfState.previewScale=scale;
-  elPdf.canvas.width=Math.ceil(viewport.width);
-  elPdf.canvas.height=Math.ceil(viewport.height);
-  elPdf.overlay.width=elPdf.canvas.width;
-  elPdf.overlay.height=elPdf.canvas.height;
-  elPdf['remove-layer'].style.width=elPdf.canvas.width+'px';
-  elPdf['remove-layer'].style.height=elPdf.canvas.height+'px';
-  elPdf.canvas.style.width=elPdf.overlay.style.width=elPdf.canvas.width+'px';
-  elPdf.canvas.style.height=elPdf.overlay.style.height=elPdf.canvas.height+'px';
-  const ctx=elPdf.canvas.getContext('2d',{alpha:false});
-  ctx.fillStyle='#fff';ctx.fillRect(0,0,elPdf.canvas.width,elPdf.canvas.height);
-  await page.render({canvas:elPdf.canvas,viewport}).promise;
-  info.viewed=true;
-  drawOverlay();updatePDFMeta();
-}
-/**
- * PDF.js returns a PDFDocumentLoadingTask from getDocument().
- * Its destroy() is the supported resource-cleanup API; do not assume
- * the resolved PDFDocumentProxy exposes destroy() in every PDF.js version.
- */
-async function disposePDFTask(task) {
-  if(!task || typeof task.destroy !== 'function') return;
-  try { await task.destroy(); }
-  catch(error) { console.warn('Could not release the previous PDF reader:', error); }
-}
-async function loadPDF(file) {
-  if(!file || pdfState.busy) return;
-  if(file.size>MAX_PDF_BYTES) {pdfMessage('pdf.size', {}, true);return;}
-  if(file.type && file.type!=='application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {pdfMessage('pdf.select', {}, true);return;}
+for (const toggle of document.querySelectorAll('[data-detector]')) toggle.addEventListener('change', updatePDFDetections);
+pdfUI('enable-all').addEventListener('click', updatePDFDetections);
 
-  let newTask = null;
-  let previous = null;
-  let installed = false;
-  setBusy(true);
-  pdfMessage('pdf.preparing');
-  // Keep the previous document visible until the new one is fully ready.
-  // If parsing fails, users can still review and export the previous file.
+function canExportPDF() {
+  return Boolean(pdfSession && !pdfOperation && !pdfDrag && !pdfSession.failed &&
+    pdfSession.pages.every(page => page.approvalDigest && !page.unmapped) &&
+    pdfSession.pages.some(page => activeRects(page).length) && elPdf.reviewed.checked && elPdf.raster.checked);
+}
+
+function updatePDFMeta() {
+  const busy = Boolean(pdfOperation);
+  for (const button of [elPdf.pick, elPdf.file, elPdf.restart, elPdf.close]) button.disabled = busy;
+  elPdf.cancel.hidden = !busy;
+  elPdf.cancel.disabled = pdfOperation?.signal.aborted ?? false;
+  elPdf.export.disabled = !canExportPDF();
+  const page = currentPDFPage();
+  if (!page) return;
+  const { pages, index, failed } = pdfSession;
+  const unviewed = pages.filter(item => !item.approvalDigest).length;
+  const manual = pages.reduce((n, item) => n + item.manual.length, 0);
+  const automatic = pages.reduce((n, item) => n + visibleAuto(item).length, 0);
+  const removed = pages.reduce((n, item) => n + item.auto.length - visibleAuto(item).length, 0);
+  const blocked = busy || failed;
+  elPdf.stats.textContent = t('pdf.stats', { count: pages.length, automatic, manual }) + (removed ? t('pdf.removedCount', { count: removed }) : '');
+  elPdf.page.textContent = t('pdf.page', { page: index + 1, total: pages.length });
+  elPdf.prev.disabled = blocked || index === 0;
+  elPdf.next.disabled = blocked || index === pages.length - 1;
+  elPdf.undo.disabled = blocked || !page.manual.length;
+  elPdf.clear.disabled = blocked || !manual;
+  elPdf['restore-auto'].disabled = blocked || !removed;
+  elPdf.reviewed.disabled = blocked || Boolean(unviewed) || pages.some(item => item.unmapped);
+  elPdf.raster.disabled = blocked;
+  const noText = !page.text.value.trim();
+  const count = visibleAuto(page).length;
+  const warning = page.unmapped ? 'pdf.unmapped' : noText ? 'pdf.noText' :
+    count ? 'pdf.automatic' : page.auto.length ? 'pdf.discarded' : 'pdf.noPatterns';
+  elPdf.warning.textContent = t(warning, { count });
+  if (removed) elPdf.warning.textContent += t('pdf.removedWarning', { count: removed });
+  if (unviewed) elPdf.warning.textContent += t('pdf.unviewed', { count: unviewed });
+  elPdf.warning.classList.toggle('pdf-warning-strong', page.unmapped || !count || !!unviewed || !!removed);
+}
+
+function beginPDFOperation(timeout = 90_000) {
+  pdfDrag = null;
+  const operation = new AbortController();
+  operation.timer = setTimeout(() => operation.abort(new LocalizedError('pdf.timeout')), timeout);
+  pdfOperation = operation;
+  updatePDFMeta();
+  drawPDFOverlay();
+  return operation;
+}
+
+function endPDFOperation(operation) {
+  clearTimeout(operation.timer);
+  pdfOperation = null;
+  updatePDFMeta();
+  drawPDFOverlay();
+}
+
+function clearCanvas(canvas) {
+  canvas.width = 0;
+  canvas.height = 0;
+}
+
+async function disposePDFSession(session) {
+  if (!session) return;
+  // Give PDF.js a chance to clear its font/cache references, then terminate the owned port.
+  let timer;
   try {
-    const lib=await ensurePdfjs();
-    const buffer=new Uint8Array(await file.arrayBuffer());
-    pdfMessage('pdf.reading');
-    // The PDF bytes remain local. Retain the loading task for proper cleanup.
-    newTask=lib.getDocument({data:buffer,isEvalSupported:false,useSystemFonts:true,stopAtErrors:true});
-    const documentPDF=await newTask.promise;
-    if(documentPDF.numPages>MAX_PAGES) throw new LocalizedError('pdf.pageLimit');
-
-    const all=[];
-    for(let i=1;i<=documentPDF.numPages;i++) {
-      pdfMessage('pdf.analyzing', { page: i, total: documentPDF.numPages });
-      const page=await documentPDF.getPage(i);
-      const viewport=page.getViewport({scale:1});
-      if(viewport.width>6000 || viewport.height>6000) throw new LocalizedError('pdf.pageSize');
-      const tc=await page.getTextContent();
-      const text=extractPageSegments(tc.items,viewport,lib);
-      const found=findPDFHits(text);
-      all.push({width:viewport.width,height:viewport.height,text,auto:found.boxes,dismissedAuto:new Set(),hitCount:found.hitCount,manual:[],viewed:false});
-    }
-
-    previous={
-      document:pdfState.document,loadingTask:pdfState.loadingTask,
-      pdfjs:pdfState.pdfjs,pages:pdfState.pages,index:pdfState.index,
-      sourceName:pdfState.sourceName, reviewed:elPdf.reviewed.checked, raster:elPdf.raster.checked
-    };
-    pdfState.document=documentPDF;pdfState.loadingTask=newTask;
-    pdfState.pdfjs=lib;pdfState.pages=all;pdfState.index=0;
-    pdfState.sourceName=file.name;pdfState.dragging=null;
-    elPdf.name.textContent=file.name;
-    elPdf.reviewed.checked=false;elPdf.raster.checked=false;
-    elPdf.empty.hidden=true;elPdf.ready.hidden=false;
-    // Rendering is part of the replacement transaction: if it fails,
-    // restore the previously opened document instead of leaving a broken UI.
-    await showPDFPage(0,true);
-    installed=true;
-    pdfMessage('pdf.ready');
-    await disposePDFTask(previous.loadingTask);
-  } catch(err) {
-    console.error('PDF:',err);
-    if(previous && !installed) {
-      pdfState.document=previous.document;pdfState.loadingTask=previous.loadingTask;
-      pdfState.pdfjs=previous.pdfjs;pdfState.pages=previous.pages;
-      pdfState.index=previous.index;pdfState.sourceName=previous.sourceName;
-      pdfState.dragging=null;
-      elPdf.name.textContent=previous.sourceName;
-      elPdf.reviewed.checked=previous.reviewed;elPdf.raster.checked=previous.raster;
-      elPdf.empty.hidden=!!previous.document;
-      elPdf.ready.hidden=!previous.document;
-      if(previous.document) {
-        try { await showPDFPage(previous.index,true); }
-        catch(restoreErr) { console.warn('Could not restore the previous preview:',restoreErr); }
-      }
-    }
-    if(newTask && !installed) await disposePDFTask(newTask);
-    pdfMessage('pdf.openError', { error: err, previous: Boolean(pdfState.document) }, true);
-  } finally {
-    setBusy(false);
+    await Promise.race([session.task?.destroy(), new Promise(resolve => { timer = setTimeout(resolve, 500); })]);
+  } catch { /* Do not expose parser errors in logs. */ }
+  finally {
+    clearTimeout(timer);
+    session.worker?.destroy();
+    session.port?.terminate();
+    if (session.url) URL.revokeObjectURL(session.url);
+    session.pages.length = 0;
+    session.document = null;
+    session.task = null;
   }
 }
-// Clear the file input even when selecting the same PDF again.
-elPdf.file.addEventListener('change',()=>{
-  const file=elPdf.file.files?.[0];
-  elPdf.file.value='';
-  void loadPDF(file);
-});
-elPdf.pick.addEventListener('click',()=>elPdf.file.click());
-elPdf.restart.addEventListener('click',()=>{elPdf.file.value='';elPdf.file.click();});
-elPdf.prev.addEventListener('click',()=>showPDFPage(pdfState.index-1));
-elPdf.next.addEventListener('click',()=>showPDFPage(pdfState.index+1));
-function drawOverlay() {
-  const ctx=elPdf.overlay.getContext('2d');
-  ctx.clearRect(0,0,elPdf.overlay.width,elPdf.overlay.height);
-  const page=pdfState.pages[pdfState.index]; if(!page) return;
-  for(const r of visibleAuto(page)) drawRect(ctx,r,'rgba(31,45,36,.72)',pdfState.previewScale);
-  for(const r of page.manual) drawRect(ctx,r,'rgba(32,49,39,.8)',pdfState.previewScale);
-  if(pdfState.dragging) {
-    const r=normalizeRect(pdfState.dragging);
-    drawRect(ctx,r,'rgba(41,129,76,.55)',pdfState.previewScale);
+
+async function renderPDFRaster(session, index, signal) {
+  const info = session.pages[index];
+  const page = await abortable(session.document.getPage(index + 1), signal);
+  const geometry = pageGeometry(page);
+  assertPDF(['width', 'height', 'pixelWidth', 'pixelHeight', 'rotation'].every(key => geometry[key] === info[key]) &&
+    geometry.viewport.transform.every((n, i) => n === info.viewport.transform[i]));
+  const canvas = document.createElement('canvas');
+  canvas.width = geometry.pixelWidth;
+  canvas.height = geometry.pixelHeight;
+  try {
+    const context = canvas.getContext('2d', { alpha: false, willReadFrequently: true });
+    assertPDF(context);
+    const task = page.render({
+      canvas, viewport: geometry.viewport, annotationMode: session.lib.AnnotationMode.DISABLE,
+      background: '#ffffff',
+    });
+    const cancel = () => task.cancel();
+    signal.addEventListener('abort', cancel, { once: true });
+    try {
+      await abortable(task.promise, signal);
+    } finally {
+      signal.removeEventListener('abort', cancel);
+    }
+    signal.throwIfAborted();
+    assertPDF(!session.failed);
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    let digest;
+    try { digest = await digestBytes(pixels); }
+    finally { pixels.fill(0); }
+    signal.throwIfAborted();
+    return { canvas, context, digest };
+  } catch (error) {
+    clearCanvas(canvas);
+    if (signal.aborted) throw signal.reason;
+    throw error;
+  }
+}
+
+function resizePDFPreview(page = currentPDFPage()) {
+  if (!page || pdfUI('pdf-mode').hidden) return;
+  const { canvas, overlay } = elPdf;
+  const displayWidth = Math.min(page.width * 1.7, 790, Math.max(220, canvas.parentElement.parentElement.clientWidth - 42));
+  const displayHeight = displayWidth * page.pixelHeight / page.pixelWidth;
+  for (const element of [canvas, overlay]) {
+    element.style.width = displayWidth + 'px';
+    element.style.height = displayHeight + 'px';
   }
   renderRemoveButtons(page);
 }
-function renderRemoveButtons(page) {
-  const layer=elPdf['remove-layer'];
-  layer.replaceChildren();
-  const buttons=[];
-  for(const r of visibleAuto(page)) buttons.push({rect:r,automatic:true});
-  page.manual.forEach((r,index)=>buttons.push({rect:r,automatic:false,index}));
-  for(const item of buttons) {
-    const {rect:r,automatic,index}=item;
-    const button=document.createElement('button');
-    button.type='button';
-    button.className='pdf-remove-rect';
-    button.textContent='×';
-    button.title=t(automatic ? 'pdf.removeAuto' : 'pdf.removeManual');
-    button.setAttribute('aria-label',t('pdf.removeLabel', { action: button.title, page: pdfState.index+1 }));
-    const x=(r.x+r.w)*pdfState.previewScale-18;
-    const y=r.y*pdfState.previewScale+2;
-    button.style.left=Math.max(0,Math.min(elPdf.overlay.width-22,x))+'px';
-    button.style.top=Math.max(0,Math.min(elPdf.overlay.height-22,y))+'px';
-    button.addEventListener('pointerdown',e=>e.stopPropagation());
-    button.addEventListener('click',event=>{
-      event.stopPropagation();
-      if(pdfState.busy)return;
-      if(automatic) page.dismissedAuto.add(autoRectKey(r));
-      else page.manual.splice(index,1);
-      invalidateReview();
-      drawOverlay();updatePDFMeta();
+window.addEventListener('resize', () => resizePDFPreview());
+
+function installPDFPreview(session, index, raster) {
+  const page = session.pages[index];
+  const { canvas, overlay } = elPdf;
+  for (const element of [canvas, overlay]) {
+    element.width = raster.canvas.width;
+    element.height = raster.canvas.height;
+  }
+  canvas.getContext('2d', { alpha: false, willReadFrequently: true }).drawImage(raster.canvas, 0, 0);
+  session.index = index;
+  page.approvalDigest = raster.digest;
+}
+
+async function loadPDF(file) {
+  if (!file || pdfOperation) return;
+  if (file.size > MAX_PDF_BYTES) return pdfMessage('pdf.size', {}, true);
+  if (file.type && file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+    return pdfMessage('pdf.select', {}, true);
+  }
+  const operation = beginPDFOperation();
+  const { signal } = operation;
+  const previous = pdfSession;
+  const candidate = { pages: [], index: 0, failed: false };
+  let raster;
+  let buffer;
+  try {
+    pdfMessage('pdf.reading');
+    const lib = globalThis.pdfjsLib;
+    assertPDF(lib?.version === '6.5.438', 'pdf.readerError');
+    candidate.lib = lib;
+    const reading = file.arrayBuffer().then(bytes => {
+      const input = new Uint8Array(bytes);
+      if (signal.aborted) input.fill(0);
+      signal.throwIfAborted();
+      return input;
     });
+    buffer = await abortable(reading, signal);
+    signal.throwIfAborted();
+    pdfMessage('pdf.preparing');
+    Object.assign(candidate, await createOfflinePDFWorker());
+    const markIncomplete = () => {
+      candidate.failed = true;
+      if (pdfSession === candidate && !pdfOperation) {
+        invalidatePDFReview();
+        pdfMessage('pdf.incomplete', {}, true);
+        updatePDFMeta();
+      }
+    };
+    candidate.port.addEventListener('error', event => {
+      event.preventDefault();
+      markIncomplete();
+      if (pdfSession === candidate || pdfOperation === operation) pdfOperation?.abort(new LocalizedError('pdf.incomplete'));
+    });
+    candidate.port.addEventListener('message', ({ data }) => {
+      if (data?.type === 'safepaste-incomplete') markIncomplete();
+    });
+    signal.throwIfAborted();
+    candidate.worker = new lib.PDFWorker({ port: candidate.port, verbosity: 1 });
+    candidate.task = lib.getDocument({ ...offlinePDFOptions, data: buffer, worker: candidate.worker });
+    candidate.document = await abortable(candidate.task.promise, signal);
+    const { numPages } = candidate.document;
+    assertPDF(Number.isInteger(numPages) && numPages > 0 && numPages <= MAX_PAGES, 'pdf.pageLimit');
+    let characters = 0;
+    let segments = 0;
+    for (let number = 1; number <= numPages; number++) {
+      pdfMessage('pdf.analyzing', { page: number, total: numPages });
+      const page = await abortable(candidate.document.getPage(number), signal);
+      const geometry = pageGeometry(page);
+      const content = await abortable(page.getTextContent(), signal);
+      const text = extractPageText(content, geometry, lib);
+      characters += text.value.length;
+      segments += text.segments.length;
+      assertPDF(characters <= MAX_DOCUMENT_TEXT && segments <= MAX_DOCUMENT_SEGMENTS, 'pdf.textLimit');
+      candidate.pages.push({ ...geometry, text, manual: [], dismissedAuto: new Set() });
+    }
+    const settings = detectorOptions();
+    for (const page of candidate.pages) Object.assign(page, findPDFHits(page.text, settings));
+    raster = await renderPDFRaster(candidate, 0, signal);
+    signal.throwIfAborted();
+    elPdf.empty.hidden = true;
+    elPdf.ready.hidden = false;
+    installPDFPreview(candidate, 0, raster);
+    pdfSession = candidate;
+    resizePDFPreview();
+    elPdf.name.textContent = file.name;
+    elPdf.raster.checked = false;
+    invalidatePDFReview();
+    pdfMessage('pdf.ready');
+    await disposePDFSession(previous);
+  } catch (error) {
+    await disposePDFSession(candidate);
+    if (error?.code === 'pdf.cancelled') pdfMessage('pdf.cancelled', { previous: Boolean(previous) });
+    else pdfMessage('pdf.openError', { errorCode: pdfErrorCode(error), previous: Boolean(previous) }, true);
+    if (!previous) { elPdf.ready.hidden = true; elPdf.empty.hidden = false; }
+  } finally {
+    if (buffer?.byteLength) buffer.fill(0);
+    if (raster) clearCanvas(raster.canvas);
+    endPDFOperation(operation);
+  }
+}
+
+function pdfErrorCode(error) {
+  if (error instanceof LocalizedError) return { key: error.code, values: error.values };
+  if (error?.name === 'InvalidPDFException') return { key: 'pdf.invalid' };
+  if (error?.name === 'PasswordException') return { key: 'pdf.password' };
+  return { key: 'error.unknown' };
+}
+
+async function showPDFPage(index) {
+  const session = pdfSession;
+  if (!session || session.failed || pdfOperation || !session.pages[index]) return;
+  const operation = beginPDFOperation();
+  let raster;
+  try {
+    raster = await renderPDFRaster(session, index, operation.signal);
+    operation.signal.throwIfAborted();
+    installPDFPreview(session, index, raster);
+    resizePDFPreview();
+    pdfMessage('pdf.ready');
+  } catch (error) {
+    session.pages[index].approvalDigest = null;
+    invalidatePDFReview();
+    if (error?.code === 'pdf.cancelled') pdfMessage('pdf.cancelled');
+    else pdfMessage('pdf.previewError', { errorCode: pdfErrorCode(error) }, true);
+  } finally {
+    if (raster) clearCanvas(raster.canvas);
+    endPDFOperation(operation);
+  }
+}
+
+async function closePDF() {
+  if (pdfOperation || !pdfSession) return;
+  const session = pdfSession;
+  const operation = beginPDFOperation();
+  pdfSession = null;
+  for (const element of [elPdf.name, elPdf.stats, elPdf.warning, elPdf.page]) element.textContent = '';
+  elPdf.file.value = '';
+  elPdf.ready.hidden = true;
+  elPdf.empty.hidden = false;
+  elPdf.raster.checked = false;
+  invalidatePDFReview();
+  clearCanvas(elPdf.canvas);
+  clearCanvas(elPdf.overlay);
+  elPdf['remove-layer'].replaceChildren();
+  pdfMessage('pdf.closed');
+  await disposePDFSession(session);
+  endPDFOperation(operation);
+}
+
+elPdf.file.addEventListener('change', () => {
+  const file = elPdf.file.files?.[0];
+  elPdf.file.value = '';
+  void loadPDF(file);
+});
+elPdf.pick.addEventListener('click', () => elPdf.file.click());
+elPdf.restart.addEventListener('click', () => elPdf.file.click());
+elPdf.close.addEventListener('click', closePDF);
+elPdf.cancel.addEventListener('click', () => {
+  pdfOperation?.abort(new LocalizedError('pdf.cancelled'));
+  updatePDFMeta();
+});
+elPdf.prev.addEventListener('click', () => showPDFPage(pdfSession.index - 1));
+elPdf.next.addEventListener('click', () => showPDFPage(pdfSession.index + 1));
+
+function paintPDFRects(context, rects) {
+  context.fillStyle = '#000';
+  for (const { x, y, w, h } of rects) context.fillRect(x, y, w, h);
+}
+
+function drawPDFOverlay() {
+  const page = currentPDFPage();
+  if (!page) return;
+  const { overlay } = elPdf;
+  const context = overlay.getContext('2d', { willReadFrequently: true });
+  context.clearRect(0, 0, overlay.width, overlay.height);
+  paintPDFRects(context, activeRects(page));
+  if (pdfDrag) {
+    const box = dragBox();
+    if (box) {
+      context.fillStyle = 'rgba(41,129,76,.55)';
+      context.fillRect(box.x, box.y, box.w, box.h);
+    }
+  }
+  renderRemoveButtons(page);
+}
+
+function renderRemoveButtons(page) {
+  const layer = elPdf['remove-layer'];
+  layer.replaceChildren();
+  const { width, height } = elPdf.overlay.getBoundingClientRect();
+  const rects = [
+    ...visibleAuto(page).map(rect => ({ rect, automatic: true })),
+    ...page.manual.map((rect, index) => ({ rect, index })),
+  ];
+  for (const { rect, automatic, index } of rects) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'pdf-remove-rect';
+    button.textContent = '×';
+    button.disabled = Boolean(pdfOperation || pdfSession.failed || pdfDrag);
+    button.title = t(automatic ? 'pdf.removeAuto' : 'pdf.removeManual');
+    button.setAttribute('aria-label', t('pdf.removeLabel', { action: button.title, page: pdfSession.index + 1 }));
+    button.style.left = clamp((rect.x + rect.w) / page.pixelWidth * width - 18, Math.max(0, width - 22)) + 'px';
+    button.style.top = clamp(rect.y / page.pixelHeight * height + 2, Math.max(0, height - 22)) + 'px';
+    button.addEventListener('click', () => changePDFRects(() => {
+      if (automatic) page.dismissedAuto.add(autoRectKey(rect));
+      else page.manual.splice(index, 1);
+    }));
     layer.appendChild(button);
   }
 }
-function drawRect(ctx,r,color,scale) {
-  ctx.fillStyle=color;
-  ctx.fillRect(r.x*scale,r.y*scale,r.w*scale,r.h*scale);
-  ctx.strokeStyle='rgba(241,247,241,.9)';ctx.lineWidth=1;
-  ctx.strokeRect(r.x*scale,r.y*scale,r.w*scale,r.h*scale);
+
+function changePDFRects(change) {
+  if (!pdfSession || pdfSession.failed || pdfOperation || pdfDrag) return;
+  change();
+  invalidatePDFReview();
+  drawPDFOverlay();
+  updatePDFMeta();
 }
+
 function pdfCursor(event) {
-  const b=elPdf.overlay.getBoundingClientRect();
-  const scaleX=elPdf.overlay.width/b.width, scaleY=elPdf.overlay.height/b.height;
-  return {x:((event.clientX-b.left)*scaleX)/pdfState.previewScale,y:((event.clientY-b.top)*scaleY)/pdfState.previewScale};
+  const { overlay } = elPdf;
+  const bounds = overlay.getBoundingClientRect();
+  return {
+    x: clamp((event.clientX - bounds.left) * overlay.width / bounds.width, overlay.width),
+    y: clamp((event.clientY - bounds.top) * overlay.height / bounds.height, overlay.height),
+  };
 }
-elPdf.overlay.addEventListener('pointerdown',event=>{
-  if(pdfState.busy || !pdfState.document) return;
+
+function dragBox() {
+  const { start, end } = pdfDrag;
+  return pixelBox(start.x, start.y, end.x, end.y, currentPDFPage());
+}
+
+elPdf.overlay.addEventListener('pointerdown', event => {
+  if (!currentPDFPage() || pdfOperation || pdfSession.failed || pdfDrag || event.button !== 0) return;
   event.preventDefault();
-  const point=pdfCursor(event);
-  pdfState.dragging={x:point.x,y:point.y,w:0,h:0};
+  const point = pdfCursor(event);
+  pdfDrag = { pointer: event.pointerId, start: point, end: point };
   elPdf.overlay.setPointerCapture(event.pointerId);
+  updatePDFMeta();
 });
-elPdf.overlay.addEventListener('pointermove',event=>{
-  if(!pdfState.dragging)return;
-  const point=pdfCursor(event);
-  pdfState.dragging.w=point.x-pdfState.dragging.x;
-  pdfState.dragging.h=point.y-pdfState.dragging.y;
-  drawOverlay();
+elPdf.overlay.addEventListener('pointermove', event => {
+  if (pdfDrag?.pointer !== event.pointerId) return;
+  pdfDrag.end = pdfCursor(event);
+  drawPDFOverlay();
 });
-function finishRect(event){
-  if(!pdfState.dragging)return;
-  const page=pdfState.pages[pdfState.index];
-  const box=normalizeRect(pdfState.dragging);
-  pdfState.dragging=null;
-  if(box.w>=3 && box.h>=3) {page.manual.push(boundRect(box,page.width,page.height));invalidateReview();}
-  drawOverlay();updatePDFMeta();
+elPdf.overlay.addEventListener('pointerup', event => {
+  if (pdfDrag?.pointer !== event.pointerId) return;
+  pdfDrag.end = pdfCursor(event);
+  const box = dragBox();
+  pdfDrag = null;
+  if (box && box.w >= 3 && box.h >= 3) changePDFRects(() => currentPDFPage().manual.push(box));
+  else { drawPDFOverlay(); updatePDFMeta(); }
+});
+for (const type of ['pointercancel', 'lostpointercapture']) {
+  elPdf.overlay.addEventListener(type, event => {
+    if (pdfDrag?.pointer !== event.pointerId) return;
+    pdfDrag = null;
+    drawPDFOverlay();
+    updatePDFMeta();
+  });
 }
-elPdf.overlay.addEventListener('pointerup',finishRect);
-elPdf.overlay.addEventListener('pointercancel',()=>{pdfState.dragging=null;drawOverlay();});
-elPdf.undo.addEventListener('click',()=>{pdfState.pages[pdfState.index].manual.pop();invalidateReview();drawOverlay();updatePDFMeta();});
-elPdf.clear.addEventListener('click',()=>{for(const p of pdfState.pages)p.manual=[];invalidateReview();drawOverlay();updatePDFMeta();});
-elPdf['restore-auto'].addEventListener('click',()=>{for(const p of pdfState.pages)p.dismissedAuto.clear();invalidateReview();drawOverlay();updatePDFMeta();});
-for(const el of [elPdf.reviewed, elPdf.raster]) el.addEventListener('change',updatePDFMeta);
+elPdf.undo.addEventListener('click', () => changePDFRects(() => currentPDFPage().manual.pop()));
+elPdf.clear.addEventListener('click', () => changePDFRects(() => { for (const page of pdfSession.pages) page.manual = []; }));
+elPdf['restore-auto'].addEventListener('click', () => changePDFRects(() => { for (const page of pdfSession.pages) page.dismissedAuto.clear(); }));
+for (const element of [elPdf.reviewed, elPdf.raster]) element.addEventListener('change', updatePDFMeta);
 
 async function generatePDF() {
-  if(!pdfState.document || pdfState.busy || !totalBoxes() || pdfState.pages.some(p=>!p.viewed) || !elPdf.reviewed.checked || !elPdf.raster.checked)return;
-  if(!window.confirm(t('pdf.confirm')))return;
-  setBusy(true);
-  const pages=[];
+  if (!canExportPDF() || !window.confirm(t('pdf.confirm'))) return;
+  const session = pdfSession;
+  const approved = session.pages.map(page => ({
+    digest: page.approvalDigest, rects: activeRects(page).map(rect => ({ ...rect })),
+  }));
+  const operation = beginPDFOperation(180_000);
+  operation.exporting = true;
+  const { signal } = operation;
+  const pages = [];
+  let compressedBytes = 0;
+  let pageInProgress = null;
   try {
-    for(let i=0;i<pdfState.pages.length;i++) {
-      const p=pdfState.pages[i];
-      pdfMessage('pdf.generating', { page: i+1, total: pdfState.pages.length });
-      const page=await pdfState.document.getPage(i+1);
-      const s=Math.min(2, 2800/p.width, 3500/p.height);
-      const scale=Math.max(.1,s);
-      const viewport=page.getViewport({scale});
-      const canvas=document.createElement('canvas');
-      canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
-      const context=canvas.getContext('2d',{alpha:false});
-      context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);
-      await page.render({canvas,viewport}).promise;
-      // Paint opaque black directly into rendered pixels (NOT a removable PDF annotation).
-      context.fillStyle='#000';
-      for(const r of [...visibleAuto(p),...p.manual]) context.fillRect(Math.max(0,r.x*scale),Math.max(0,r.y*scale),Math.min(canvas.width-r.x*scale,r.w*scale),Math.min(canvas.height-r.y*scale,r.h*scale));
-      pages.push({jpeg:dataUrlToJpeg(canvas.toDataURL('image/jpeg',.94)),pixelWidth:canvas.width,pixelHeight:canvas.height,width:p.width,height:p.height});
-      canvas.width=0;canvas.height=0;
+    for (const [index, selection] of approved.entries()) {
+      pageInProgress = session.pages[index];
+      pdfMessage('pdf.generating', { page: index + 1, total: approved.length });
+      const raster = await renderPDFRaster(session, index, signal);
+      const { canvas, context } = raster;
+      try {
+        assertPDF(raster.digest === selection.digest, 'pdf.changedRender');
+        const { pixelWidth, pixelHeight, width, height } = session.pages[index];
+        paintPDFRects(context, selection.rects);
+        const pixels = context.getImageData(0, 0, pixelWidth, pixelHeight).data;
+        const rgbDeflate = await compressRedactedPixels(pixels);
+        pages.push({ rgbDeflate, pixelWidth, pixelHeight, width, height });
+        compressedBytes += rgbDeflate.length;
+        assertPDF(compressedBytes <= MAX_RASTER_BYTES, 'pdf.outputLimit');
+      } finally {
+        clearCanvas(canvas);
+      }
+      signal.throwIfAborted();
     }
-    const result=buildRasterPDF(pages);
-    const blob=new Blob([result],{type:'application/pdf'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download=t('file.pdfName');
-    document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),60000);
+    pageInProgress = null;
+    assertPDF(pages.length === approved.length && !session.failed);
+    const result = buildRasterPDF(pages);
+    const url = URL.createObjectURL(new Blob([result], { type: 'application/pdf' }));
+    result.fill(0);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = t('file.pdfName');
+    document.body.append(link);
+    try { link.click(); }
+    finally {
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
     pdfMessage('pdf.generated');
-  } catch(e) {
-    console.error('PDF export:',e);
-    pdfMessage('pdf.exportError', { error: e }, true);
-  } finally {setBusy(false);}
+  } catch (error) {
+    invalidatePDFReview();
+    if (pageInProgress && error?.code !== 'pdf.cancelled') pageInProgress.approvalDigest = null;
+    if (error?.code === 'pdf.cancelled') pdfMessage('pdf.cancelled');
+    else pdfMessage('pdf.exportError', { errorCode: pdfErrorCode(error) }, true);
+  } finally {
+    for (const page of pages) page.rgbDeflate.fill(0);
+    endPDFOperation(operation);
+  }
 }
-elPdf.export.addEventListener('click',generatePDF);
+elPdf.export.addEventListener('click', generatePDF);
 
 i18n.subscribe(() => {
   renderPDFMessage();
   updatePDFMeta();
-  const page = pdfState.pages[pdfState.index];
-  if (page) renderRemoveButtons(page);
+  if (currentPDFPage()) renderRemoveButtons(currentPDFPage());
 });
 renderPDFMessage();
+updatePDFMeta();

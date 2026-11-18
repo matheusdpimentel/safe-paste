@@ -1,20 +1,10 @@
 # Browser PDF manual smoke checks
 
-Use synthetic PDFs only after changing PDF behavior or UI.
+Use synthetic files. Start with the real-library suite described in [the security report](../docs/security-audit.md).
 
-1. Open generated `index.html` directly in Chrome, then check offline text mode and both themes/languages.
-2. Open **PDF**, load `examples/demo-original.pdf` using the real pinned PDF.js (internet required), and check page order and visible rectangles.
-3. Visit every page. Export must remain blocked while any page is unviewed.
-4. Draw/remove/redraw a manual rectangle; remove an automatic suggestion and restore it. Each edit must clear page-review confirmation.
-5. Check warnings about removed suggestions. Switch PT/EN during review: labels, counters, removal tooltips and messages should change; rectangles, page visitation and confirmations should remain.
-6. Check both confirmations and the final image-conversion dialog. Export, extract text independently (expected empty), and visually compare every rendered page with the original.
-7. Test an image-only PDF: no automatic matches; manual rectangles still work. There is no OCR.
-8. Test corrupt/password-protected files, over-25-MB files, over-30-page files, rotations and mixed layouts. Do not describe unreviewed output as protected with certainty.
-9. Verify network activity: only PDF.js dependencies should be loaded; no document bytes should be uploaded.
-10. Check `file://` and hosted use, plus Safari/Firefox before broad distribution. Record browser-specific limitations.
-
-## Replacement regression
-
-Replace an open PDF with another, repeat with the same filename, and try a corrupt document. Failures must leave the old file, rectangles and confirmations intact, with the error visible in the open panel. Successful replacement resets review for the new file. Resource cleanup uses `PDFDocumentLoadingTask.destroy()`, never an assumed proxy `destroy()`.
-
-`npm run test:browser` covers mocked PDF lifecycle/export. `REAL_PDF=1 npm run test:browser` additionally covers the real library on a synthetic example. `tests/pdf-switch.browser.py` is a legacy optional Python/Playwright mock test. None of these replaces visual coverage review or establishes guaranteed anonymization.
+1. Copy `index.html` alone into an empty local folder. Disconnect from the network and open the HTML directly. Verify text import, editing and download, both interface languages and both themes.
+2. Load a synthetic multi-page PDF with a scan, digital text and a rotated page. Check page order and visible orientation. While a page remains unviewed, export must be disabled.
+3. Draw, remove and restore rectangles. Switch PT/EN during review and verify that geometry and confirmations persist. Any rectangle change must clear the review checkbox. Changing detector choices must require reviewing other pages again.
+4. Confirm review and image conversion. Dismiss the last dialog once, then accept it. Open the output in an independent reader. Compare alignment at several zoom levels and confirm the entire sensitive region is black. Verify that text extraction is empty and removing the image from a page leaves no underlying content.
+5. Replace the file, cancel a replacement, select the same name again, and try an invalid or encrypted PDF. Failed replacements must preserve the previous review. Close the PDF and confirm that the preview and filename disappear.
+6. Repeat across the browser matrix in the [exit criteria](../docs/security-audit.md#criteria-for-leaving-experimental). Note unsupported files and relevant browser/runtime versions.

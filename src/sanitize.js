@@ -36,6 +36,40 @@ export const DEFAULT_DETECTIONS = Object.freeze({
   uuid: true,
 });
 
+function lowerBound(values, target) {
+  let low = 0;
+  let high = values.length;
+  while (low < high) {
+    const mid = low + Math.floor((high - low) / 2);
+    if (values[mid] < target) low = mid + 1;
+    else high = mid;
+  }
+  return low;
+}
+
+function resolveOverlaps(candidates) {
+  if (candidates.length < 2) return candidates;
+  candidates.sort((a, b) => b.priority - a.priority || (b.end - b.start) - (a.end - a.start) || a.start - b.start);
+  const starts = [...new Set(candidates.map(hit => hit.start))].sort((a, b) => a - b);
+  // Fenwick tree storing the maximum accepted end in each prefix block.
+  // A half-open interval intersects iff a hit starting before its end extends past its start.
+  const maxEnd = new Uint32Array(starts.length + 1);
+  const accepted = [];
+  for (const hit of candidates) {
+    let end = 0;
+    for (let i = lowerBound(starts, hit.end); i > 0; i -= i & -i) {
+      end = Math.max(end, maxEnd[i]);
+    }
+    if (end > hit.start) continue;
+
+    accepted.push(hit);
+    for (let i = lowerBound(starts, hit.start) + 1; i < maxEnd.length; i += i & -i) {
+      maxEnd[i] = Math.max(maxEnd[i], hit.end);
+    }
+  }
+  return accepted.sort((a, b) => a.start - b.start);
+}
+
 export function sanitize(source, options = {}) {
   const input = String(source ?? '');
   const settings = { ...DEFAULT_DETECTIONS, ...options };
@@ -153,10 +187,7 @@ export function sanitize(source, options = {}) {
   if(settings.ip) add(/\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g,'Endereços IP','192.0.2.1',15);
   if(settings.uuid) add(/\b[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/gi,'UUIDs','00000000-0000-4000-8000-000000000000',10);
 
-  candidates.sort((a,b)=>b.priority-a.priority || (b.end-b.start)-(a.end-a.start) || a.start-b.start);
-  const accepted=[];
-  for(const c of candidates) if(!accepted.some(h=>c.start<h.end && c.end>h.start)) accepted.push(c);
-  accepted.sort((a,b)=>a.start-b.start);
+  const accepted = resolveOverlaps(candidates);
   let text='',pos=0;
   for(const h of accepted){text+=input.slice(pos,h.start)+h.replacement;pos=h.end;}
   text+=input.slice(pos);

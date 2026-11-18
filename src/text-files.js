@@ -33,12 +33,7 @@ export function sanitizedJsonIsValid(text) {
   try { JSON.parse(text); return true; } catch { return false; }
 }
 
-export function protectedTextFilename(originalName, { suffix = 'protegido', fallbackStem = 'arquivo' } = {}) {
-  if (!originalName) return `safepaste-${suffix}.txt`;
-  const basename = originalName.split(/[/\\]/).at(-1)
-    .replace(/[\u0000-\u001f<>:"|?*]/g, '_').trim();
-  const extension = basename.match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
-  if (!TEXT_FILE_EXTENSIONS.includes(extension)) return `safepaste-${suffix}.txt`;
-  const stem = basename.slice(0, -extension.length - 1).replace(/[.\s]+$/,'').slice(0, 100);
-  return `${stem || fallbackStem}-${suffix}.${extension}`;
+export function protectedTextFilename(extension, suffix = 'protegido') {
+  const safeExtension = TEXT_FILE_EXTENSIONS.includes(extension) ? extension : 'txt';
+  return `safepaste-${suffix}.${safeExtension}`;
 }

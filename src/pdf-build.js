@@ -1,5 +1,6 @@
 import { LocalizedError } from './i18n.js';
-/** Produce an entirely NEW image-only PDF from JPEG page pixels. Never copy PDF objects. */
+/** Produce a new image-only PDF from losslessly compressed, redacted RGB pixels. */
+export const MAX_RASTER_BYTES = 80 * 1024 * 1024;
 export function buildRasterPDF(pages) {
   if (!Array.isArray(pages) || !pages.length) throw new LocalizedError('pdf.noPages');
   const encoder = new TextEncoder();
@@ -24,9 +25,10 @@ export function buildRasterPDF(pages) {
     const pageId = 3 + i * 3;
     const imageId = pageId + 1;
     const contentId = pageId + 2;
-    const { jpeg, pixelWidth, pixelHeight, width, height } = page;
-    if (!(jpeg instanceof Uint8Array) || jpeg.length < 8 ||
-      jpeg[0] !== 0xff || jpeg[1] !== 0xd8 ||
+    const { rgbDeflate, pixelWidth, pixelHeight, width, height } = page;
+    if (!(rgbDeflate instanceof Uint8Array) || rgbDeflate.length < 8 ||
+      (rgbDeflate[0] & 15) !== 8 || ((rgbDeflate[0] << 8) + rgbDeflate[1]) % 31 !== 0 ||
+      ![pixelWidth, pixelHeight].every(Number.isSafeInteger) ||
       ![pixelWidth, pixelHeight, width, height].every(v => Number.isFinite(v) && v > 0)) {
       throw new LocalizedError('pdf.invalidPage', { page: i + 1 });
     }
@@ -37,8 +39,8 @@ export function buildRasterPDF(pages) {
     ]);
     object(imageId, [
       `<< /Type /XObject /Subtype /Image /Width ${Math.round(pixelWidth)} /Height ${Math.round(pixelHeight)} ` +
-      `/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`,
-      jpeg,
+      `/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode /Length ${rgbDeflate.length} >>\nstream\n`,
+      rgbDeflate,
       '\nendstream'
     ]);
     const drawing = `q\n${w} 0 0 ${h} 0 0 cm\n/Im0 Do\nQ\n`;
@@ -49,14 +51,23 @@ export function buildRasterPDF(pages) {
   add(`xref\n0 ${total + 1}\n0000000000 65535 f \n`);
   for (let id = 1; id <= total; id++) add(`${String(offsets[id]).padStart(10,'0')} 00000 n \n`);
   add(`trailer\n<< /Size ${total + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  if (size > MAX_RASTER_BYTES) throw new LocalizedError('pdf.outputLimit');
   const result = new Uint8Array(size); let p = 0;
   for (const chunk of pieces) { result.set(chunk, p); p += chunk.length; }
   return result;
 }
-export function dataUrlToJpeg(uri) {
-  if (!uri.startsWith('data:image/jpeg;base64,')) throw new LocalizedError('pdf.jpeg');
-  const data = atob(uri.slice('data:image/jpeg;base64,'.length));
-  const result = new Uint8Array(data.length);
-  for (let i = 0; i < data.length; i++) result[i] = data.charCodeAt(i);
-  return result;
+export async function compressRedactedPixels(rgba) {
+  const rgb = new Uint8Array(rgba.length / 4 * 3);
+  for (let input = 0, output = 0; input < rgba.length; input += 4) {
+    rgb[output++] = rgba[input];
+    rgb[output++] = rgba[input + 1];
+    rgb[output++] = rgba[input + 2];
+  }
+  try {
+    const stream = new Blob([rgb]).stream().pipeThrough(new CompressionStream('deflate'));
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+  } finally {
+    rgb.fill(0);
+    rgba.fill(0);
+  }
 }

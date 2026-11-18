@@ -145,3 +145,18 @@ test('address and phone switches work separately for text and shared PDF engine'
  assert.ok(withoutPhone.text.includes('(48) 3333-4444'));
  assert.equal(sanitize(source,{addresses:false,phones:false}).text,source);
 });
+
+test('many matches retain independent hits and give whole assignments priority over nested matches', () => {
+  const count = 32_000;
+  const source = Array.from({ length: count }, (_, i) => `fixture${i}@example.invalid`).join('\n');
+  const assignment = 'DATABASE_URL=postgresql://fixture_user:FAKE_SECRET@db.example.invalid:5432/demo';
+  const started = performance.now();
+  const result = sanitize(`${assignment}\n${source}`);
+  const elapsed = performance.now() - started;
+  assert.equal(result.hits.length, count + 1);
+  assert.equal(result.hits[0].original, assignment.split('=')[1]);
+  assert.equal(result.hits.at(-1).original, 'fixture31999@example.invalid');
+  assert.doesNotMatch(result.text, /fixture\d+@example\.invalid|FAKE_SECRET/);
+  // Deliberately allow headroom for CI and catch a return to the quadratic scan.
+  assert.ok(elapsed < 1500, `32,000 hits took ${Math.round(elapsed)} ms`);
+});

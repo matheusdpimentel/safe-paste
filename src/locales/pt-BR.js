@@ -67,7 +67,7 @@ export const ptBR = {
   "ui.pdfIntro": "Detectamos padrões no texto extraível e sugerimos tarjas sobre as páginas. Você pode acrescentar tarjas manualmente antes de exportar.",
   "ui.pdfFile": "Escolher arquivo PDF",
   "ui.pdfPick": "Escolher PDF",
-  "ui.pdfLimits": "Até 25 MB e 30 páginas. A biblioteca PDF.js é carregada pela internet; o arquivo escolhido não é enviado a um servidor. Não há OCR para PDFs digitalizados. Telefones, endereços e CEPs são buscados no texto extraível, sujeitos à revisão.",
+  "ui.pdfLimits": "Até 25 MB e 30 páginas. O processamento é offline. Documentos digitalizados não têm OCR e exigem revisão manual.",
   "ui.pdfRestart": "Trocar arquivo",
   "ui.pdfPrev": "← Anterior",
   "ui.pdfNext": "Próxima →",
@@ -105,7 +105,6 @@ export const ptBR = {
   "file.json": "O arquivo .json não contém JSON válido. Corrija a estrutura antes de importar.",
   "file.read": "Não foi possível ler o arquivo.",
   "file.suffix": "protegido",
-  "file.stem": "arquivo",
   "file.pdfName": "SafePaste-protegido.pdf",
   "error.unknown": "Ocorreu um erro inesperado. Tente novamente.",
   "text.copy": "Copiar texto ↗",
@@ -178,7 +177,7 @@ export const ptBR = {
     "one": " Ainda falta visualizar {count} página antes de exportar.",
     "other": " Ainda falta visualizar {count} páginas antes de exportar."
   },
-  "pdf.readerError": "Não foi possível carregar o leitor PDF. Conecte-se à internet e tente novamente.",
+  "pdf.readerError": "Não foi possível iniciar o leitor offline de PDF neste navegador.",
   "pdf.size": "O PDF deve ter até 25 MB.",
   "pdf.select": "Selecione um arquivo PDF.",
   "pdf.preparing": "Preparando o leitor PDF...",
@@ -200,5 +199,16 @@ export const ptBR = {
   "pdf.exportError": "Falha ao gerar PDF: {reason}",
   "pdf.noPages": "Nenhuma página para exportar.",
   "pdf.invalidPage": "Página {page} inválida para exportação.",
-  "pdf.jpeg": "Imagem JPEG indisponível."
+  "ui.licenses": "Licenças de terceiros",
+  "ui.pdfCancel": "Cancelar operação",
+  "ui.pdfClose": "Fechar PDF",
+  "pdf.closed": "PDF fechado.",
+  "pdf.cancelled": "Operação cancelada.",
+  "pdf.timeout": "O processamento do PDF excedeu o tempo limite.",
+  "pdf.incomplete": "Não foi possível processar o PDF por completo.",
+  "pdf.previewError": "Não foi possível renderizar a página: {reason}",
+  "pdf.changedRender": "A página difere da prévia revisada. Abra-a novamente para revisar antes de exportar.",
+  "pdf.unmapped": "Não foi possível posicionar um dado detectado com confiança. A exportação está bloqueada.",
+  "pdf.textLimit": "O PDF excede o limite de processamento de texto.",
+  "pdf.outputLimit": "O PDF gerado excede o limite de saída de 80 MiB."
 };

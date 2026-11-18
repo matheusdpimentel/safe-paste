@@ -4,7 +4,7 @@ This guide covers the independent **Python CLI**. The experimental browser imple
 
 ## Installation and use
 
-Use Python 3.10 or later in an isolated environment.
+Use Python 3.11 or later in an isolated environment. The browser application's standalone offline distribution is independent of this CLI.
 
 macOS/Linux:
 
@@ -64,4 +64,4 @@ Tests cover independent rule offsets, phone/CPF/address overlaps, page dimension
 
 Optional dependencies: `pypdfium2` (Apache-2.0/BSD-3-Clause plus PDFium component licenses), Pillow and ReportLab. Review upstream licenses before redistributing binaries; they are not bundled here. The browser's PDF.js dependency is separate. Rule parity with JavaScript must be checked explicitly.
 
-Future work may include audited local PDF.js distribution and more precise geometry fixtures. OCR requires an explicit privacy design and maintainer approval; do not automatically invoke external APIs.
+The browser uses a separate pinned PDF.js distribution with its own tests and [security report](security-audit.md). OCR requires an explicit privacy design and maintainer approval.

@@ -88,6 +88,7 @@
       <div id="pdf-mode" role="tabpanel" aria-labelledby="mode-pdf" hidden>
         <section class="workspace pdf-area" aria-label="PDF sanitization" data-i18n-aria-label="ui.pdfEditor">
           <div class="pdf-head"><h2><span data-i18n="ui.pdfEditor"></span> <span class="soft-text" data-i18n="ui.pdfSubtitle"></span></h2><span class="tiny-hint" data-i18n="ui.pdfExperimental"></span></div>
+          <button id="pdf-cancel" class="button button-text" type="button" data-i18n="ui.pdfCancel" hidden></button>
           <div id="pdf-empty" class="pdf-empty">
             <div class="pdf-upload-icon" aria-hidden="true">▤</div>
             <h3 data-i18n="ui.pdfSelect"></h3>
@@ -98,7 +99,7 @@
             <div id="pdf-message" class="pdf-status" role="status" aria-live="polite">No PDF selected.</div>
           </div>
           <div id="pdf-ready" class="pdf-ready" hidden>
-            <div class="pdf-filebar"><span class="pdf-file-name" id="pdf-name"></span><button id="pdf-restart" class="button button-text" type="button" data-i18n="ui.pdfRestart"></button></div>
+            <div class="pdf-filebar"><span class="pdf-file-name" id="pdf-name"></span><div><button id="pdf-restart" class="button button-text" type="button" data-i18n="ui.pdfRestart"></button><button id="pdf-close" class="button button-text" type="button" data-i18n="ui.pdfClose"></button></div></div>
             <div id="pdf-ready-message" class="pdf-status pdf-ready-status" role="status" aria-live="polite"></div>
             <div id="pdf-stats" class="pdf-count"></div>
             <div class="pdf-review-grid">
@@ -130,7 +131,7 @@
         </section>
       </div>
     </main>
-    <footer><span>SafePaste</span></footer>
+    <footer><span>SafePaste</span><details class="license-notices"><summary data-i18n="ui.licenses"></summary><pre><!-- PDF license notices --></pre></details></footer>
   </div>
 <!-- scripts -->
 </body>

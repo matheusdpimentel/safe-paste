@@ -85,10 +85,10 @@ test('validation errors retain stable keys and are translated after switching', 
   assert.equal(translatedError({ name: 'PasswordException' }, i18n), i18n.t('pdf.password'));
 });
 
-test('download names localize only the suffix, preserving the original stem and extension', () => {
-  assert.equal(protectedTextFilename('relatorio.json', { suffix: 'protected' }), 'relatorio-protected.json');
-  assert.equal(protectedTextFilename(null, { suffix: 'protected' }), 'safepaste-protected.txt');
-  assert.equal(protectedTextFilename('relatorio.md'), 'relatorio-protegido.md');
+test('neutral download names localize the suffix and preserve the extension', () => {
+  assert.equal(protectedTextFilename('json', 'protected'), 'safepaste-protected.json');
+  assert.equal(protectedTextFilename(null, 'protected'), 'safepaste-protected.txt');
+  assert.equal(protectedTextFilename('md'), 'safepaste-protegido.md');
 });
 
 test('standalone HTML includes both catalogs, valid CSP hashes and no local imports', () => {

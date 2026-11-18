@@ -7,7 +7,8 @@
   "scripts": {
     "build": "node build.mjs",
     "test": "node --test",
-    "test:browser": "node tests/i18n.browser.mjs"
+    "test:browser": "node tests/i18n.browser.mjs && node tests/pdf-security.browser.mjs",
+    "test:pdf-security": "node tests/pdf-security.browser.mjs"
   },
   "license": "MIT"
 }

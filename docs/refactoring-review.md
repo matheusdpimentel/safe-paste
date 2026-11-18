@@ -32,12 +32,12 @@ Avoid a framework migration or large detector rewrite solely for aesthetics. The
 
 1. **Manual text redaction:** let users select and replace an unrecognized segment while retaining review warnings. Highest product value for names and contextual secrets outside regex coverage; requires decisions about edits, offsets and undo.
 2. **PDF undo/redo:** keep a local in-memory history for adding/removing/restoring rectangles; invalidate review after each history operation. Never persist document contents.
-3. **Audited offline PDF distribution:** vendor the pinned PDF.js and worker, review licenses/integrity/CSP and explicitly choose packaging. Requires a maintainer decision; no new dependency was downloaded into this repository.
+3. **Audited offline PDF distribution:** implemented after this initial review. See the [security report](security-audit.md) for current evidence and remaining release criteria.
 4. **Additional locale-specific patterns:** only after separate coverage decisions and synthetic positive/negative/overlap tests. Selecting English should never silently disable Brazilian patterns or imply global personal-data coverage.
 
 OCR, automatic external translation and cloud document analysis are intentionally outside this implementation. OCR needs an explicit privacy design and approval.
 
-## Validation evidence
+## Initial release validation (historical)
 
 - Baseline: 39 existing Node tests passed before changes.
 - Updated suite: 47 Node tests, including language detection, persistence, storage denial, catalog/placeholder parity, dynamic errors, naming and standalone CSP validation.
@@ -46,9 +46,9 @@ OCR, automatic external translation and cloud document analysis are intentionall
 - Three generated exports (two mocked documents and one real PDF.js example) were independently opened with pypdf and PDFium: five pages total, no extractable text. All five pages were rendered and visually inspected; the real example retained layout with black pixel redactions over recognized values.
 - PT/EN light/dark desktop and Portuguese mobile screenshots were inspected. Safari, Firefox, hosted deployment, large-file performance and adversarial/unusual PDF layouts remain unverified in this session.
 
-PDF structural checks establish that these outputs contain no selectable text. They do not prove the absence of sensitive pixels or complete detection. The PDF feature remains experimental, with no OCR and an existing remote library dependency.
+These checks establish that the initial outputs contain no selectable text. For current offline and raster verification, see the [security report](security-audit.md).
 
-## Changed-file inventory
+## Initial release changed-file inventory (historical)
 
 - Runtime/build: `build.mjs`, `package.json`, generated `index.html`, `src/app.js`, `src/pdf-mode.js`, `src/pdf-build.js`, `src/text-files.js`, `src/styles.css`, and a comment-only edit in `src/sanitize.js`.
 - New sources: `src/index.html`, `src/i18n.js`, `src/locales/en-US.js`, `src/locales/pt-BR.js`.

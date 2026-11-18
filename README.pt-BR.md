@@ -10,7 +10,7 @@ Sanitizador de textos, arquivos TXT/JSON/Markdown e PDFs para revisão de dados 
 2. Abra o arquivo no navegador (dois cliques).
 3. Use a aba **Texto e código** para colar conteúdo **ou importar `.txt`, `.json` e `.md`**; depois revise, copie ou baixe o arquivo protegido. A aba **PDF** continua oferecendo prévia, tarjas e exportação.
 
-**Não precisa instalar Python, Node.js, extensões ou executar um servidor.** O `index.html` contém o código próprio da aplicação embutido e também pode ser hospedado no GitHub Pages (Settings → Pages → Deploy from branch → main → root). **Texto funciona sem internet; o modo PDF requer conexão à internet para carregar a biblioteca PDF.js de uma versão fixa no CDN**, mas o conteúdo do PDF é processado no navegador. Consulte as limitações de segurança abaixo.
+**Texto e PDF funcionam offline a partir de um único `index.html`.** O arquivo contém PDF.js, worker, fontes padrão de PDF e decodificadores. Use um navegador atualizado. O fluxo PDF por `file://` foi verificado no Chrome. O aplicativo também pode ser hospedado no GitHub Pages e funciona sem instalar Python, Node.js, extensões ou servidor.
 
 ## Recursos
 
@@ -30,7 +30,7 @@ Sanitizador de textos, arquivos TXT/JSON/Markdown e PDFs para revisão de dados 
 1. Na aba **Texto e código**, clique em **Importar arquivo** e selecione `.txt`, `.json` ou `.md` (máximo **5 MB**, codificação **UTF-8**).
 2. O conteúdo aparece no editor original e é sanitizado automaticamente à direita, usando as mesmas detecções configuráveis do texto colado.
 3. Revise os destaques. Se necessário, altere o conteúdo original ou ajuste os interruptores em **O que detectar**.
-4. Clique em **Baixar protegido**. O arquivo terá nome semelhante a `config-protegido.json`, `relatorio-protegido.md` ou `logs-protegido.txt`. Se você apenas colou texto, o download se chamará `safepaste-protegido.txt`.
+4. Clique em **Baixar protegido**. A aplicação usa um nome neutro, como `safepaste-protegido.json`, `safepaste-protegido.md` ou `safepaste-protegido.txt`, e aproveita apenas a extensão validada do nome original. Texto colado é baixado como `.txt`.
 5. **Limpar tudo** apaga o conteúdo visível e desvincula o arquivo importado, sem modificar o original no computador.
 
 O arquivo é lido usando as APIs locais do navegador; não é enviado para servidor. O navegador não instala software nem grava automaticamente o texto. O download é iniciado apenas por ação do usuário. **Importação não equivale a anonimização garantida**: revise as substituições.
@@ -77,9 +77,9 @@ O SafePaste aceita contribuições, mas todas as novas regras precisam incluir t
 5. Marque as duas confirmações: revisão completa e **conversão das páginas em imagens**.
 6. Clique em **Gerar PDF com tarjas**. A aplicação solicita outra confirmação e baixa um **novo PDF**.
 
-**O que muda:** o documento preserva aproximadamente a aparência, a paginação e os tamanhos das páginas; perde texto selecionável, pesquisa, links, formulários, assinaturas digitais e objetos originais. A geração utiliza somente pixels renderizados, com tarjas opacas desenhadas sobre as imagens. O original **nunca é modificado**.
+**O que muda:** a exportação confere a renderização contra a prévia revisada e substitui os pixels nas regiões tarjadas por preto opaco. O PDF novo contém imagens com compressão sem perdas. Preserva a ordem e as dimensões visíveis das páginas, com possíveis diferenças na aparência. Texto selecionável, pesquisa, links, formulários, assinaturas e objetos originais ficam de fora.
 
-**Limitações importantes:** detecção automática pode falhar ou posicionar tarjas inadequadamente; páginas escaneadas, imagens e nomes próprios exigem revisão e marcação manual. O aplicativo não promete anonimização total. O recurso requer conexão para carregar o PDF.js no navegador; **o arquivo PDF não é enviado pelo código do SafePaste a um servidor**. Bibliotecas externas executadas no navegador exigem confiança no provedor — para uso sensível em produção, o recomendado é hospedar/auditar a biblioteca localmente.
+**Limitações:** a detecção pode deixar passar dados ou posicionar tarjas de forma imprecisa. Páginas escaneadas, imagens e nomes próprios exigem atenção na revisão e podem precisar de tarjas manuais. A exportação é bloqueada se o leitor apontar processamento incompleto ou se a página divergir da prévia. Use **Cancelar operação** ou **Fechar PDF** para interromper o processamento ou liberar o documento. Consulte o [relatório de segurança](docs/security-audit.md).
 
 Também existe um protótipo alternativo por linha de comando, em Python, documentado em **[docs/pdf-redaction.md](docs/pdf-redaction.md)**.
 
@@ -95,7 +95,7 @@ Também existe um protótipo alternativo por linha de comando, em Python, docume
 - `src/app.js`: lógica dos controles do texto, importação e download (fonte editável).
 - `src/text-files.js`: validação de arquivos textuais, UTF-8, JSON e nomes de download (fonte editável).
 - `src/pdf-mode.js`: carregamento, detecção, prévia e tarjas no PDF.
-- `src/pdf-build.js`: gera um PDF novo a partir de imagens JPEG, sem copiar objetos originais.
+- `src/pdf-build.js`: gera um PDF novo a partir de pixels RGB comprimidos sem perdas.
 - `src/styles.css`: estilos (fonte editável).
 - `tests/`: testes unitários e de regressão.
 - `docs/`: guias para contribuir, modo PDF no navegador e protótipo Python.
@@ -115,7 +115,7 @@ node --test
 
 ## Segurança e limitações
 
-- O conteúdo colado é processado no navegador; o aplicativo não envia ou persiste o texto. No modo PDF, o PDF.js é carregado de um CDN externo, mas os bytes do documento são mantidos localmente pelo código da aplicação.
+- Texto e PDF são processados em memória no navegador. A política CSP bloqueia conexões de rede. O visualizador PDF não carrega uma camada interativa para scripts ou formulários.
 - Somente o tema e a preferência manual de idioma podem ser salvos em `localStorage`. Em navegadores que bloqueiam armazenamento, a troca continua funcionando durante a sessão.
 - A detecção é baseada em padrões e **não garante remoção completa** de informações sensíveis. Revise tudo antes de compartilhar com terceiros.
 - Evite colocar segredos reais em issues, capturas de tela ou commits.
@@ -125,7 +125,7 @@ Licença MIT.
 
 ## Gerar o HTML de distribuição
 
-O `index.html` contém o CSS e o JavaScript próprios do SafePaste embutidos e funciona sem servidor, inclusive por `file://`. A funcionalidade PDF carrega o PDF.js por HTTPS quando necessário.
+O `index.html` incorpora o CSS, o JavaScript e os recursos de PDF a partir da cópia local versionada. O arquivo funciona sem servidor, inclusive por `file://`.
 Para editar o projeto, altere os arquivos em `src/` e depois execute:
 
 ```bash
@@ -134,7 +134,7 @@ node --test
 ```
 
 O script atualiza o HTML e os hashes da Content Security Policy (CSP).
-Distribua o `index.html` gerado. Não é necessário instalar pacotes para gerar ou usar o arquivo. O leitor PDF.js é uma dependência opcional remota em tempo de execução.
+Distribua o `index.html` gerado. O build usa apenas Node.js e os recursos versionados. As licenças e versões das dependências estão no [relatório de segurança](docs/security-audit.md).
 
 ### Cobertura e decisões de detecção
 
@@ -153,7 +153,7 @@ O campo de entrada exibe o texto diretamente no `textarea`, com cores legíveis 
 
 O arquivo [`examples/telefone-endereco-original.pdf`](examples/telefone-endereco-original.pdf) contém números, endereços e CEPs **fictícios**, além de texto comum que deve permanecer visível. Abra a aba PDF, selecione esse arquivo, confira cada tarja, aceite a conversão em imagens e gere a saída. Este exemplo não testa OCR, PDFs digitalizados ou layouts complexos.
 
-**Troca de PDFs:** use **Trocar arquivo** no painel. Falhas na leitura do novo PDF não fecham o anterior. O teste de regressão opcional está em `tests/pdf-switch.browser.py` (Playwright + Chromium).
+**Troca de PDFs:** use **Trocar arquivo** no painel. Falhas na leitura preservam a revisão anterior. A [suíte de integração](docs/security-audit.md#reproduce-the-evidence) verifica a troca com o leitor PDF.js real e a rede bloqueada.
 
 ## Idioma e contribuição
 

@@ -9,7 +9,7 @@ SafePaste imports files using the browser's local `File` API. It does not upload
 3. `file.arrayBuffer()` reads bytes; `decodeTextBuffer()` decodes strict UTF-8, strips a BOM and rejects binary control characters.
 4. `validateJsonFile()` checks JSON syntax when applicable.
 5. The text editor displays the original; the shared detector generates highlights and protected output. The original disk file remains untouched.
-6. **Download protected** creates a local `Blob` and requests a new download. Extensions are retained; the suffix follows the UI language (`-protected` / `-protegido`).
+6. **Download protected** creates a local `Blob` with a neutral name such as `safepaste-protected.json`. The validated extension is retained and the suffix follows the UI language. The original filename is displayed locally in the import panel.
 
 Markdown is plain text: no HTML rendering or script execution. Regex substitutions may affect code blocks. JSON textual formatting/order are retained when replacements permit it. If protected JSON becomes invalid, both copy and download remain blocked until corrected. Syntax validation is not schema validation or guaranteed removal of sensitive information.
 

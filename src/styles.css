@@ -101,6 +101,9 @@
 .pdf-intro-note{font-size:11px;color:#8b978c;line-height:1.5;margin:10px auto 0;max-width:520px}
 .pdf-ready{padding:17px 22px 24px}
 .pdf-filebar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+#pdf-cancel{margin:8px 22px 0}
+.license-notices summary{cursor:pointer;text-align:right}
+.license-notices pre{white-space:pre-wrap;max-width:75ch;overflow-wrap:anywhere}
 .pdf-file-name{font-size:13px;font-weight:700;overflow-wrap:anywhere}
 .pdf-count{color:#849386;font-size:11px;margin:8px 0 15px}
 .pdf-review-grid{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(240px,.9fr);gap:18px}

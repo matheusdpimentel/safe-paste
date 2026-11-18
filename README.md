@@ -11,7 +11,7 @@ A local-first, best-effort sanitizer for text, TXT/JSON/Markdown files and exper
 3. Paste text or import `.txt`, `.json` or `.md` in **Text and code**. Review the highlights and protected output before copying or downloading.
 4. For PDFs, open **PDF · experimental**, review every page and export a new image-only document.
 
-No Node.js, Python, extensions or local server are required to use the app. **Text mode works offline.** PDF mode requires internet to load the existing, version-pinned PDF.js dependency from jsDelivr. SafePaste processes document bytes locally; it does not upload them. Remote libraries execute with access to the page, so their provider must be trusted.
+Text and PDF both work offline from a single `index.html`. PDF.js, its worker, standard PDF fonts and decoder assets are embedded. Open the file in a current browser with Web Workers, WebAssembly, Web Crypto and Compression Streams. The offline PDF flow was verified in Chrome. Running the app requires no Node.js, Python, extension or server.
 
 The generated `index.html` can also be hosted on GitHub Pages: Settings → Pages → Deploy from a branch → main → root. Keep the generated HTML in the published root.
 
@@ -30,7 +30,7 @@ Switching the interface language preserves editor contents, settings, theme, PDF
 
 ## Text files
 
-Select **Import file**, review the protected output, then choose **Download protected**. A file such as `config.json` becomes `config-protected.json` in English or `config-protegido.json` in Portuguese. Pasted text downloads as `safepaste-protected.txt` / `safepaste-protegido.txt`.
+Select **Import file**, review the protected output, then choose **Download protected**. Exports use a neutral name such as `safepaste-protected.json` or `safepaste-protegido.json`. Only the validated file extension is carried over from the original filename. Pasted text downloads with the `.txt` extension.
 
 Markdown stays plain text: headings, code fences and lists are not executed or rendered as HTML. JSON formatting and textual order are retained when substitutions permit it. JSON validation checks syntax, not a schema or the absence of sensitive information. Invalid input, binary files, unsupported extensions, invalid UTF-8 and files above the size limit are rejected. There is no directory processing or DOCX/XLSX conversion.
 
@@ -60,11 +60,11 @@ Browser PDFs use the same JavaScript detector as text mode. The Python CLI has s
 4. Confirm page review and conversion to image pages.
 5. Choose **Generate redacted PDF**, accept the conversion dialog, then open and visually inspect the downloaded PDF.
 
-Redactions are painted as opaque black pixels into rendered images. The output is an entirely new PDF: original PDF objects, hidden text, attachments, forms, links, metadata and digital signatures are not copied. Page appearance, order and dimensions are approximately retained. Selectable/searchable text and text accessibility are lost, and file size can increase.
+Redactions overwrite the reviewed regions with opaque black pixels. The exporter checks the rerendered pages against the reviewed raster and writes only losslessly compressed RGB images into a new PDF. Source objects, hidden text, attachments, forms, links, metadata and signatures are excluded. Page order and visible dimensions are retained. Fonts, colors and other details may differ after rasterization. Selectable text and text accessibility are lost, and output may be larger.
 
 Automatic detection and geometry mapping can miss or misplace redactions, especially with unusual fonts, rotations, fragmented text or images. Scanned documents require manual rectangles. **No extractable text in the output does not prove every sensitive pixel was covered.**
 
-**Replace file** loads the new PDF before discarding the previous one. If reading or preview rendering fails, the previous document and its review state remain available. The same filename may be selected again.
+**Replace file** keeps the previous review available if the new PDF fails to open. **Cancel operation** interrupts processing. **Close PDF** releases the document and clears the preview. A failed or inconsistent page blocks export.
 
 See [browser PDF architecture and testing](docs/pdf-browser.md), [manual smoke checks](tests/pdf-browser-smoke.md) and the independent [Python CLI](docs/pdf-redaction.md). The synthetic examples include `demo-original.pdf`, `demo-sanitizado.pdf` and `telefone-endereco-original.pdf`. All example data is invented.
 
@@ -89,27 +89,27 @@ Edit sources, then regenerate `index.html`. **Do not edit its embedded JavaScrip
 | `src/text-files.js` | File validation, decoding, JSON checks and safe filenames |
 | `src/pdf-mode.js` | PDF loading, preview and redaction review |
 | `src/pdf-build.js` | New image-only PDF generation |
+| `src/pdf-offline.js`, `vendor/pdfjs/` | Verified worker and pinned offline PDF resources |
 | `src/styles.css` | Shared light/dark styles |
 | `tests/`, `docs/`, `tools/` | Regressions, technical guides and optional Python CLI |
 
 The editor keeps textarea text visible; the highlight layer provides background color only. Regression tests check this in both themes.
 
-Browser integration tests are optional development tooling. With Playwright and its Chromium installed:
+Browser integration tests use real PDF.js with network access blocked. With Playwright and Chromium installed, use an isolated Python environment for the independent PDF verifier:
 
 ```bash
+python -m pip install -r tests/requirements-pdf-security.txt
 npm run test:browser
-# Also exercise the version-pinned remote PDF.js (requires internet):
-REAL_PDF=1 npm run test:browser
 ```
 
-`PLAYWRIGHT_MODULE` can point to an existing Playwright module, `CHROME_BIN` to a Chrome executable and `TEST_OUTPUT_DIR` to a temporary artifact directory. See [CONTRIBUTING.md](CONTRIBUTING.md), [internationalization](docs/i18n.md), [AI workflow](docs/ai-workflow.md) and [refactoring review and future improvements](docs/refactoring-review.md). Coding agents should follow [AGENTS.md](AGENTS.md). Technical documentation is maintained in English.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for environment overrides and [the security report](docs/security-audit.md) for test evidence, dependency licenses, the threat model and the experimental exit criteria. Coding agents should follow [AGENTS.md](AGENTS.md). See also [internationalization](docs/i18n.md), [AI workflow](docs/ai-workflow.md) and [refactoring and future improvements](docs/refactoring-review.md).
 
 ## Privacy and limitations
 
 - SafePaste is **best-effort**, not guaranteed anonymization. Review all output before sharing.
 - No telemetry, backend, translation APIs or content uploads. Only theme and manual language preferences are stored.
 - Browser storage may be blocked, particularly in private browsing or under `file://`; language switching still works for the current page. Persistence on local files depends on the browser.
-- PDF.js and its worker are fetched on demand from an existing pinned CDN URL. Text mode needs no network. Vendoring PDF.js requires a separate license/CSP review and distribution decision.
+- The app blocks network connections with CSP. PDF annotation rendering and XFA are disabled. The browser preview runs canvas rendering without a scripting or interactive form layer.
 - No automatic OCR, image recognition, multilingual detection expansion or comprehensive security audit.
 - Never include real secrets in issues, screenshots, examples, tests or commits. If a real credential was exposed, revoke/rotate it; sanitizing later does not undo exposure.
 

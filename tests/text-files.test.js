@@ -38,12 +38,13 @@ test('Markdown keeps headings and code-fence structure', () => {
   assert.ok(protectedText.endsWith('\n```'));
   assert.doesNotMatch(protectedText, /usuario@empresa.com.br|SECRET_TEST_TOKEN_123/);
 });
-test('safe protected file names and fallback for manual text', () => {
-  assert.equal(protectedTextFilename('config.json'),'config-protegido.json');
-  assert.equal(protectedTextFilename('LEIA-ME.md'),'LEIA-ME-protegido.md');
-  assert.equal(protectedTextFilename('log.txt'),'log-protegido.txt');
-  assert.equal(protectedTextFilename('c:\\downloads\\segredo.json'),'segredo-protegido.json');
-  assert.equal(protectedTextFilename(null),'safepaste-protegido.txt');
+test('protected names use only the validated extension and never the source name', () => {
+  for (const name of ['cpf-98765432100.JSON', 'fictional-user@example.invalid.md', 'secret-label.txt']) {
+    const extension = inspectTextFile({ name, size: 10 });
+    assert.equal(protectedTextFilename(extension), `safepaste-protegido.${extension}`);
+    assert.equal(protectedTextFilename(name), 'safepaste-protegido.txt');
+  }
+  assert.equal(protectedTextFilename(null), 'safepaste-protegido.txt');
 });
 test('generated HTML embeds helpers, buttons and local restrictions', async () => {
   const { readFileSync } = await import('node:fs');

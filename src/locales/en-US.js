@@ -67,7 +67,7 @@ export const enUS = {
   "ui.pdfIntro": "We detect patterns in extractable text and suggest redactions on the pages. You can add redactions manually before exporting.",
   "ui.pdfFile": "Choose a PDF file",
   "ui.pdfPick": "Choose PDF",
-  "ui.pdfLimits": "Up to 25 MB and 30 pages. PDF.js loads over the internet; the selected file is not uploaded to a server. There is no OCR for scanned PDFs. Brazilian phone numbers, addresses and postal codes are detected in extractable text and require review.",
+  "ui.pdfLimits": "Up to 25 MB and 30 pages. Processing is offline. Scanned documents have no OCR and need manual review.",
   "ui.pdfRestart": "Replace file",
   "ui.pdfPrev": "← Previous",
   "ui.pdfNext": "Next →",
@@ -105,7 +105,6 @@ export const enUS = {
   "file.json": "The .json file contains invalid JSON. Fix its structure before importing.",
   "file.read": "Could not read the file.",
   "file.suffix": "protected",
-  "file.stem": "file",
   "file.pdfName": "SafePaste-protected.pdf",
   "error.unknown": "An unexpected error occurred. Try again.",
   "text.copy": "Copy text ↗",
@@ -178,7 +177,7 @@ export const enUS = {
     "one": " You still need to view {count} page before exporting.",
     "other": " You still need to view {count} pages before exporting."
   },
-  "pdf.readerError": "Could not load the PDF reader. Connect to the internet and try again.",
+  "pdf.readerError": "Could not start the offline PDF reader in this browser.",
   "pdf.size": "The PDF must be no larger than 25 MB.",
   "pdf.select": "Select a PDF file.",
   "pdf.preparing": "Preparing the PDF reader...",
@@ -200,5 +199,16 @@ export const enUS = {
   "pdf.exportError": "Could not generate the PDF: {reason}",
   "pdf.noPages": "No pages to export.",
   "pdf.invalidPage": "Page {page} is invalid for export.",
-  "pdf.jpeg": "JPEG image unavailable."
+  "ui.licenses": "Third-party licenses",
+  "ui.pdfCancel": "Cancel operation",
+  "ui.pdfClose": "Close PDF",
+  "pdf.closed": "PDF closed.",
+  "pdf.cancelled": "Operation canceled.",
+  "pdf.timeout": "PDF processing timed out.",
+  "pdf.incomplete": "The PDF could not be processed completely.",
+  "pdf.previewError": "Could not render the page: {reason}",
+  "pdf.changedRender": "The page differs from the reviewed preview. Reopen it for review before exporting.",
+  "pdf.unmapped": "A detected value could not be positioned reliably. Export is blocked.",
+  "pdf.textLimit": "The PDF exceeds the text processing limit.",
+  "pdf.outputLimit": "The generated PDF exceeds the 80 MiB output limit."
 };

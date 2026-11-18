@@ -43,7 +43,7 @@ if (settings.examplePostalCode) {
 
 **Do not add that example to production:** CEP detection already belongs to `addresses`.
 
-Higher priorities win overlaps. Candidates are collected against original offsets, then accepted in priority/length/start order before the result is rebuilt. Avoid rewriting input during detection. Global patterns are required for `matchAll()`.
+Higher priorities win overlaps. Candidates are collected against original offsets, then accepted in priority/length/start order before the result is rebuilt. A Fenwick tree indexes accepted ends by candidate start, keeping overlap resolution at O(n log n) time and O(n) space for n candidates. Avoid rewriting input during detection. Global patterns are required for `matchAll()`.
 
 Preserve JSON, `.env`, URLs and code syntax where only a value is sensitive. Match the complete value without consuming unrelated words, punctuation or later fields. Never log source values or include real credentials in replacements.
 

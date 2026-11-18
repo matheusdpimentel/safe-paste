@@ -1,54 +1,30 @@
-# Browser PDF sanitization (experimental)
+# Browser PDF redaction (experimental)
 
-## Review flow
+Download and open the generated `index.html` in a current browser. The file includes PDF.js, its worker, fonts and image resources. The same file works offline, including through `file://`. Chrome is the tested browser for this release.
 
-1. Open the generated `index.html`, including directly through `file://`.
-2. Select **PDF · experimental** and a synthetic PDF up to 25 MB / 30 pages.
-3. PDF.js loads from the existing pinned CDN URL; internet is required for this dependency. SafePaste passes local bytes through `getDocument({data: Uint8Array(...)})`, not an upload URL.
-4. Review all pages. Drag to add manual rectangles; click **×** to remove any rectangle, including an automatic one.
-5. **Undo last** removes the current page's last manual rectangle; **Clear manual** removes manual rectangles from all pages. **Restore automatic** restores all dismissed suggestions.
-6. Confirm page review and image conversion, then export and accept the final conversion dialog.
-7. Open the downloaded PDF and visually inspect every page before sharing.
+## Review and export
 
-Any rectangle/detector change clears the review confirmation. Removed automatic suggestions stay removed during recalculation through stable geometry keys. The exported file includes only active rectangles. Removing a suggestion may leave sensitive pixels visible.
+1. Choose **PDF · experimental**, then select a PDF up to 25 MB and 30 pages.
+2. Review every page. Drag to draw a manual rectangle. Click **×** to remove a rectangle. **Undo last** removes the last manual rectangle on this page, **Clear manual** clears manual rectangles, and **Restore automatic** restores dismissed suggestions.
+3. Confirm review and conversion to images. There is no OCR. A scan without text can be covered manually. Export requires at least one rectangle somewhere in the document.
+4. Accept the final confirmation and open the downloaded PDF. Verify that every sensitive region is covered.
 
-## Architecture
+Changing a rectangle clears the review confirmation. Changing detector settings requires revisiting the other pages. Removing an automatic suggestion can leave the corresponding data visible. Switching the interface language preserves rectangles and confirmations.
 
-- `src/pdf-mode.js` owns PDF loading, text extraction, preview, manual rectangle state and review/export gating.
-- `src/sanitize.js` finds the same patterns used for text, including Brazilian phone numbers, addresses and CEPs regardless of UI language.
-- PDF.js `getTextContent()` items are mapped to rectangles with conservative margins. A whole text run can be covered if only part matches. Unusual fonts, rotations, fragments and unsupported geometry can make positioning unreliable. Items that cannot be mapped may have no automatic rectangle.
-- Export renders pages into canvases, paints **opaque black pixels** directly into the image, then passes JPEG pixels to `src/pdf-build.js`.
-- `buildRasterPDF()` creates a new image-only PDF. Never reuse original PDF objects or replace pixel redactions with removable annotations.
+The output preserves page order and visible dimensions. Rotation is baked into the new image. Rasterization can change colors, fonts or fine details. Interactive forms, annotations, links, signatures and text accessibility are excluded. Search and text selection are lost. The generated file can be larger.
 
-Approximate appearance, orientation, page count and dimensions remain. Searchable/selectable text, text accessibility, links, forms, vector editing, annotations, attachments, original metadata and signatures do not. Image-only output may be larger; uncovered pixels can still be recognized by OCR elsewhere.
+## Offline boundary
 
-## Resource lifecycle and replacement
+`build.mjs` incorporates the PDF.js display API and a compressed worker payload from verified local assets. `src/pdf-offline.js` verifies the worker digest before creating a classic blob worker. Each document has its own worker. Embedded asset lookup in `tools/embed-pdfjs.mjs` resolves CMaps, fonts, ICC data and decoders by exact name. Missing assets do not fall back to network sources. The CSP blocks network connections and authorizes only the hashed scripts, WebAssembly compilation, local blob workers and embedded font/image resources.
 
-**Replace file** prepares the new document before discarding the previous document. Reading/rendering failure rolls back to the prior file, redactions and confirmations, displaying an error in the open review panel. Selecting the same file again is allowed.
+The worker receives file bytes after local reading succeeds. The display API renders only into a canvas, with annotation rendering and XFA disabled. Fonts are drawn as outlines to avoid installing PDF-provided fonts in the HTML document. SafePaste does not install the PDF.js viewer, scripting sandbox, link handlers, text layer or form UI. Worker warnings and operator stream failures become a fixed signal to block the PDF. The UI surfaces translated codes and does not log raw exception messages.
 
-Retain the `PDFDocumentLoadingTask` from `getDocument()`. Release it with `await task.destroy()` after a successful replacement, or release a failed new task. Do not assume `PDFDocumentProxy.destroy()` exists in every PDF.js version.
+## Reviewed pixels and lifecycle
 
-## Localization
+- The preview and exporter use the same viewport transform, raster dimensions and integer rectangles. CSS scales the display only. Automatic boxes can conservatively cover whole text runs. An unmapped recognized value blocks export.
+- After successful preview rendering, the application records a SHA-256 digest of that page's raster. Export snapshots approved rectangles and rerenders each page. It compares geometry and pixels, paints opaque black into the pixels and compresses the RGB result without loss. It starts a download only after every page succeeds.
+- The writer emits a new catalog, page tree and three objects per page: page, image and drawing stream. The drawing stream places the new image. It contains no source object references.
+- **Replace file** retains the previous PDF until the candidate's first preview succeeds. Invalid input, password protection or a canceled replacement leaves the previous review intact. Processing is serialized. **Cancel operation** interrupts the current operation and discards partial output. **Close PDF** drops working references, terminates the worker and clears the canvases. JavaScript cannot guarantee physical erasure of memory.
+- Limits include 25 MiB input, 30 pages, 6,000 points per side, approximately five million output pixels per page, 24 million pixels per source image, 500,000 extracted characters, 50,000 text segments, 80 MiB output and operation timeouts. Complex or damaged files may be refused.
 
-Use `pdf.*` / `ui.pdf*` catalog keys for messages, progress, counters, tooltips, confirmation text and errors. Keep message keys/parameters rather than already translated strings so an in-progress or previous message updates when language changes. Third-party errors are mapped to safe messages; raw exception text may contain source information and is not displayed.
-
-Language changes update labels and removal buttons only. They do not reload/render the PDF, recalculate candidates, discard rectangles, reset page visitation or invalidate confirmations. Filenames and imported content are not translated; only download naming changes.
-
-## Privacy and unsupported cases
-
-PDF.js and its worker are loaded on demand from `https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/`. This is an existing optional runtime dependency and executes third-party code in the browser. Offline PDF distribution requires a separate vendoring, license, integrity and CSP review. Text mode remains offline.
-
-No OCR, face recognition, external analysis APIs, telemetry or content persistence. Scanned pages require manual redactions. Password-protected PDFs have no password entry flow. Names, images, unsupported geometry, free-form secrets and unrecognized patterns can be missed. **This is not guaranteed anonymization.**
-
-## Verification
-
-```bash
-node build.mjs
-node --test
-npm run test:browser
-REAL_PDF=1 npm run test:browser
-```
-
-Browser tests require optional Playwright/Chromium tooling. The default suite mocks PDF.js for deterministic progress, multi-page review, removal/restoration, failed replacement and export tests. `REAL_PDF=1` additionally reads `examples/demo-original.pdf` with the actual remote library through `file://` and exports it. Both languages are exercised. See [CONTRIBUTING.md](../CONTRIBUTING.md) for executable/module overrides.
-
-Independently extract text from generated output and render it for visual inspection. No embedded text is expected, but an empty extraction does **not** prove all sensitive pixels were covered. Follow [manual smoke checks](../tests/pdf-browser-smoke.md) across target browsers. An optional legacy Python/Playwright replacement test also exists at `tests/pdf-switch.browser.py`; it mocks PDF.js and does not replace real-library checks.
+See the [security report](security-audit.md) for the threat model, reproducible tests, dependency licenses and criteria for removing the experimental label.

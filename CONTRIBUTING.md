@@ -5,7 +5,7 @@ Use English for code, comments, technical documentation and contribution descrip
 1. Read [AGENTS.md](AGENTS.md) and [adding detectors](docs/adding-detectors.md).
 2. Use invented data only. Never submit real secrets or document contents.
 3. Keep changes focused. Preserve `file://`, offline text processing, local file handling and the existing design.
-4. Do not introduce telemetry, uploads, backends, production dependencies or network calls without an explicit maintainer decision. PDF.js is an existing on-demand exception.
+4. Do not introduce telemetry, uploads, backends, unreviewed dependencies or runtime network calls. The PDF.js distribution is local and pinned.
 5. Edit `src/index.html`, `src/` and the translation catalogs; regenerate the standalone HTML.
 
 ```bash
@@ -13,13 +13,15 @@ node build.mjs
 node --test
 ```
 
-For UI changes, run `npm run test:browser` with optional Playwright tooling, then check both languages, themes and narrow layouts. Browser tests use synthetic files, run against `file://`, and save temporary screenshots and generated PDFs. For an actual PDF.js integration check, run `REAL_PDF=1 npm run test:browser` with internet available. The standard browser suite mocks PDF.js for deterministic lifecycle tests.
+For UI changes, run `npm run test:browser` with Playwright and Chromium installed. The suite opens the app through `file://` with networking blocked and runs the real PDF.js against synthetic files. Install the independent verifier using `python -m pip install -r tests/requirements-pdf-security.txt` in a virtual environment. Set `PDF_TEST_PYTHON` to that Python executable if it differs from `python3`, `PLAYWRIGHT_MODULE` for an existing Playwright module, or `CHROME_BIN` to select Chrome. `PDF_TEST_OUTPUT_DIR` and `TEST_OUTPUT_DIR` override temporary output locations.
 
 For PDF changes, also run:
 
 ```bash
 python -m unittest discover -s tests -p 'test_pdf_*.py' -v
 ```
+
+Set `PDF_TEST_ENGINE=firefox` or `PDF_TEST_ENGINE=webkit` with the matching Playwright browser installed to run `npm run test:pdf-security` on those engines. Playwright WebKit does not test the native Safari application. To generate an updated synthetic demonstration using the browser exporter, set `PDF_DEMO_OUTPUT` to a scratch path when running the Chromium PDF suite. Inspect the output before replacing `examples/demo-sanitizado.pdf`.
 
 Install optional Python dependencies from `tools/requirements-pdf.txt` in an isolated environment. Verify actual generated PDFs with an independent extractor and inspect rendered pages. Follow [PDF smoke checks](tests/pdf-browser-smoke.md); zero extracted text is not proof of complete coverage.
 

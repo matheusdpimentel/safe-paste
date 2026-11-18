@@ -6,7 +6,7 @@ SafePaste is a local-first tool for **best-effort** sanitization, not a system t
 
 1. Read `README.md` and `docs/adding-detectors.md`.
 2. Use invented data only in examples, tests and commits.
-3. Preserve offline text processing and the standalone `index.html`, including `file://`.
+3. Preserve offline text and PDF processing in the standalone `index.html`, including `file://`.
 4. Do **not** add telemetry, network calls, CDNs, backends or production dependencies without an explicit maintainer decision.
 5. Use English for code, comments and technical documentation. Maintain both READMEs and both translation catalogs when relevant. Brazilian patterns and legacy detector labels remain compatible across UI languages.
 
@@ -37,8 +37,10 @@ Explain changes, limitations, tests run and remaining unsupported cases. Passing
 - `src/pdf-mode.js` manages PDF.js reading, `sanitize()` detection and manual redactions.
 - `src/pdf-build.js` creates a new image-only PDF; never copy original objects.
 - Preserve image conversion confirmation and review of every page. Pattern detection is not guaranteed anonymization.
-- PDF.js loads on demand from an existing version-pinned URL. Never send PDF bytes to external APIs. Future offline distribution requires vendoring with a license and CSP audit.
+- PDF.js and assets are pinned in `vendor/pdfjs`. Build verifies SHA-256 digests and embeds all resources. Keep `connect-src 'none'`, static asset lookup, isolated worker processing and stable error keys. Preserve the license notices and rerun the advisory review when updating dependencies.
+- Keep approval and export tied to the same integer pixel rectangles and verified render. Block failed operations and discard partial output.
 - After JavaScript or CSS changes, run `node build.mjs`, `node --test`, and verify actual PDF generation and absence of extractable text.
+- Run `npm run test:pdf-security` for PDF changes and inspect the resulting synthetic PDFs. See `docs/security-audit.md`.
 
 ## TXT, JSON and Markdown
 

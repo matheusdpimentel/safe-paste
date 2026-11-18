@@ -92,4 +92,10 @@ python tests/pdf-security-fixtures.py verify /path/to/synthetic-test-output
 
 The follow-up passed 48 Node tests, 9 Python tests and 9 text-browser scenarios. The real PDF suite passed in Chrome 157.0.8103.79, Firefox 153.0 (Playwright build) and WebKit 26.5 (Playwright build) on macOS. Each run opened the isolated HTML via `file://`, emitted no observed external HTTP(S)/WebSocket requests, and independently verified six exported pages. Chrome and Firefox used offline emulation. WebKit used a closed loopback proxy and HTTP(S) interception because its offline emulation also rejects local file navigation. Native Safari 18.6 declined WebDriver setup while remote automation was disabled.
 
+## macOS WebKit compatibility follow-up
+
+The native macOS 15.7.4 `WKWebView` reproduced a generic PDF-open failure with the synthetic demonstration file. The pinned PDF.js calls map insertion methods that this engine lacks during parsing and rendering. The build now embeds compatibility code in the display module and worker and provides a local numeric fallback when `Math.sumPrecise` is unavailable.
+
+The repaired standalone opened the same file in `WKWebView` and exported a page with four opaque pixel masks. Independent inspection found one RGB image and no extractable text, metadata, annotations or attachments. The rendered output was visually reviewed. The 49 Node tests, 9 Python tests and real PDF suites in Chrome, Firefox and Playwright WebKit passed. The WebKit suite ran with `PDF_TEST_LEGACY_APIS=1` to exercise the display fallback and found zero external requests. The Safari application's own open, review and download flow remains pending a manual check.
+
 Cross-engine testing also led to two PDF reader adjustments. The worker starts after local file reading, so canceling that read leaves no parser worker to shut down. PDF.js renders font outlines to canvas without installing PDF-provided fonts into the HTML document. The network and CSP checks stayed enabled throughout the final runs.

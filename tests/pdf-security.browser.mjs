@@ -38,7 +38,14 @@ try {
   const isExternal = url => /^(https?|wss?):/i.test(url);
   context.on('request', request => { if (isExternal(request.url())) outside.push(request.url()); });
   await context.route(/^https?:/i, route => route.abort());
-  await context.addInitScript(() => {
+  await context.addInitScript(omitPDFBuiltins => {
+    if (omitPDFBuiltins) {
+      for (const prototype of [Map.prototype, WeakMap.prototype]) {
+        delete prototype.getOrInsert;
+        delete prototype.getOrInsertComputed;
+      }
+      delete Math.sumPrecise;
+    }
     window.testWorkers = { started: 0, closed: 0 };
     window.testViolations = [];
     addEventListener('securitypolicyviolation', event => testViolations.push({
@@ -56,7 +63,7 @@ try {
         return super.terminate();
       }
     };
-  });
+  }, process.env.PDF_TEST_LEGACY_APIS === '1');
   const page = await context.newPage();
   page.on('request', request => { if (isExternal(request.url())) outside.push(request.url()); });
   page.on('websocket', socket => outside.push(socket.url()));

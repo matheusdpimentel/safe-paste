@@ -17,6 +17,8 @@ The output preserves page order and visible dimensions. Rotation is baked into t
 
 `build.mjs` incorporates the PDF.js display API and a compressed worker payload from verified local assets. `src/pdf-offline.js` verifies the worker digest before creating a classic blob worker. Each document has its own worker. Embedded asset lookup in `tools/embed-pdfjs.mjs` resolves CMaps, fonts, ICC data and decoders by exact name. Missing assets do not fall back to network sources. The CSP blocks network connections and authorizes only the hashed scripts, WebAssembly compilation, local blob workers and embedded font/image resources.
 
+The build adds `src/pdf-compat.js` to the display module and worker for engines that lack the map insertion methods and numeric summation used by this version of PDF.js. This addresses a file-open and rendering failure reproduced on macOS WebKit 18.6. The real PDF integration suite can exercise the display fallback on newer browsers with `PDF_TEST_LEGACY_APIS=1 npm run test:pdf-security`.
+
 The worker receives file bytes after local reading succeeds. The display API renders only into a canvas, with annotation rendering and XFA disabled. Fonts are drawn as outlines to avoid installing PDF-provided fonts in the HTML document. SafePaste does not install the PDF.js viewer, scripting sandbox, link handlers, text layer or form UI. Worker warnings and operator stream failures become a fixed signal to block the PDF. The UI surfaces translated codes and does not log raw exception messages.
 
 ## Reviewed pixels and lifecycle

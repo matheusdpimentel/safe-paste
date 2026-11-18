@@ -5,6 +5,8 @@ import { gzipSync } from 'node:zlib';
 const root = new URL('../vendor/pdfjs/', import.meta.url);
 const read = path => readFileSync(new URL(path, root));
 const manifest = JSON.parse(read('integrity.json'));
+const compatibility = readFileSync(new URL('../src/pdf-compat.js', import.meta.url), 'utf8');
+const adaptPDFSum = source => source.replaceAll('Math.sumPrecise(', 'sumPDFNumbers(');
 if (manifest.version !== '6.5.438') throw new Error('Update the reviewed PDF.js version and adapter together.');
 const files = Object.fromEntries(Object.entries(manifest.files).map(([path, expected]) => {
   const content = read(path);
@@ -42,6 +44,7 @@ adapt(/^export \{ WorkerMessageHandler \};$/m, '');
 worker = worker.replaceAll('import.meta.url', 'globalThis.location.href');
 const quietConsole = 'const console = Object.freeze({log(){}, info(){}, warn(){}, error(){}, debug(){}});';
 const embeddedWorker = Buffer.from(`
+${compatibility}
 const console = Object.freeze({
   log(){}, info(){}, debug(){},
   warn(){ postMessage({ type: "safepaste-incomplete" }); },
@@ -54,11 +57,11 @@ function offlineAsset(key) {
 }
 // Any remaining native fetch path fails before it can reach the network.
 const fetch = () => Promise.reject(new Error("Network disabled in PDF worker"));
-${worker.replace(/^\/\/# sourceMappingURL=.*$/gm, '')}
+${adaptPDFSum(worker.replace(/^\/\/# sourceMappingURL=.*$/gm, ''))}
 `);
 export const pdfWorkerBase64 = gzipSync(embeddedWorker, { level: 9 }).toString('base64');
 export const pdfWorkerDigest = createHash('sha256').update(embeddedWorker).digest('hex');
-export const pdfLibrary = `\n${quietConsole}\n${files['pdf.min.mjs'].toString()}\n`.replace(/<\/script/gi, '<\\/script');
+export const pdfLibrary = `\n${quietConsole}\n${compatibility}\n${adaptPDFSum(files['pdf.min.mjs'].toString())}\n`.replace(/<\/script/gi, '<\\/script');
 export const pdfLicenseNotices = Object.entries(files)
   .filter(([path]) => path.includes('LICENSE'))
   .map(([path, bytes]) => {

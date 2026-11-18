@@ -1,0 +1,16 @@
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+*.pyc
+node_modules/
+*.log
+*.tmp
+*.bak
+*.secret
+*-protected-local.pdf
+*-protegido-local.pdf

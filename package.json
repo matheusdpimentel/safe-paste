@@ -1,0 +1,13 @@
+{
+  "name": "safepaste",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first text sanitizer and experimental PDF redaction, without a backend",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test",
+    "test:browser": "node tests/i18n.browser.mjs"
+  },
+  "license": "MIT"
+}

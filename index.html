@@ -1,0 +1,1659 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-19CE82JxSHoXBnHfZN6TQSr+kFq+o7yXowfDJ3hJM9A=' https://cdn.jsdelivr.net; style-src 'sha256-xPFc8p5nb4yDEhoupgxRxoMQAxsifg0GG7deN7wAB1M='; img-src data: blob:; font-src data: blob:; worker-src blob: https://cdn.jsdelivr.net; connect-src https://cdn.jsdelivr.net; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title data-i18n="page.title">SafePaste — Protect before you share</title>
+  <meta name="description" content="Hide credentials and personal data before sharing. Local, best-effort processing without content uploads." data-i18n-content="page.description">
+  <style>:root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-synthesis:none;color:#202420;background:#f9faf8;--line:#e5e9e3;--muted:#818a82;--green:#3c7457;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}*{box-sizing:border-box}body{margin:0}button,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid #72a283;outline-offset:3px}.shell{max-width:1248px;margin:auto;padding:0 40px}.topbar{height:82px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.wordmark{font-size:16px;font-weight:690;letter-spacing:-.45px;display:flex;align-items:center;gap:10px;color:inherit;text-decoration:none}.brand-symbol{display:grid;place-items:center;background:#263a2f;color:#fff;width:33px;height:33px;border-radius:8px;font-size:20px;font-weight:700;letter-spacing:-2px;padding-right:2px}.brand-symbol span{color:#92ceaa}.local-label{font-size:12px;color:#69756b;display:flex;align-items:center;gap:9px}.local-dot{width:7px;height:7px;border-radius:50%;background:#64a67b}.intro{padding:72px 0 52px}.eyebrow,.subheading{font-size:10px;letter-spacing:1.6px;font-weight:740;color:#78877a}.intro h1{font-size:clamp(42px,5.3vw,69px);letter-spacing:-3px;line-height:1.045;margin:20px 0 20px;font-weight:680}.period{color:#66a77d}.intro p{max-width:565px;color:#6d776f;font-size:15px;line-height:1.75;margin:0}.workspace{border:1px solid #e0e5dd;border-radius:13px;background:#fff;box-shadow:0 9px 35px #23372a08;overflow:hidden}.workspace-header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-bottom:1px solid var(--line)}.workspace-title{font-size:12px;font-weight:700}.soft-text{font-weight:450;color:#9da69e}.workspace-actions{display:flex;gap:4px}.button{border:none;border-radius:7px;padding:9px 13px;font-size:12px;font-weight:620;background:none}.button-text{color:#737e75}.button-text:hover{background:#f3f6f2;color:#253c2d}.button-primary{background:#304d3c;color:#fff;white-space:nowrap}.button-primary:hover:not(:disabled){background:#253d2e}.button:disabled{opacity:.42;cursor:not-allowed}.panes{display:grid;grid-template-columns:1fr 1fr}.pane{min-width:0;display:flex;flex-direction:column}.pane+.pane{border-left:1px solid var(--line)}.pane-header{padding:22px 22px 15px;display:flex;justify-content:space-between;align-items:center;gap:12px}.pane-header>div{display:flex;align-items:center;gap:10px}.pane-number{color:#a1aaa0;font:11px var(--mono)}.pane h2{font-size:13px;margin:0;font-weight:670}.tiny-hint{font-size:11px;color:#a0a9a0;text-align:right}.editor{position:relative;min-height:350px;margin:0 16px 0 22px;flex:1}.editor textarea,.highlight-layer,.output{font:12.5px/1.8 var(--mono);letter-spacing:0;tab-size:2;white-space:pre-wrap;overflow-wrap:anywhere}.editor textarea,.output{width:100%;height:350px;padding:17px;border:1px solid #edf0ec;border-radius:7px;background:#fafbf9;resize:vertical;outline:none;display:block}.editor textarea{position:relative;z-index:2;color:#3c493f;-webkit-text-fill-color:#3c493f;caret-color:#27382e;background:transparent;resize:none}.editor textarea::placeholder{color:#abb4ab;-webkit-text-fill-color:#abb4ab}.editor textarea::selection{background:#b8d9c6aa}.highlight-layer{position:absolute;z-index:1;inset:0;margin:0;padding:17px;border:1px solid transparent;border-radius:7px;overflow:hidden;pointer-events:none;color:transparent;-webkit-text-fill-color:transparent;background:#fafbf9}.highlight-layer mark{background:#f6dfa0;color:transparent;-webkit-text-fill-color:transparent;border-radius:2px;box-decoration-break:clone}.output{width:calc(100% - 38px);margin:0 22px 0 16px;color:#3c493f}.pane-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:67px;padding:12px 22px;color:#89968a;font-size:11px}.settings-row{display:flex;align-items:center;gap:28px;flex-wrap:wrap;padding:16px 22px;background:#fcfdfb;border-top:1px solid var(--line)}.settings-head{font-size:11px;color:#89958a}.check{display:flex;align-items:center;gap:8px;color:#526054;font-size:12px;cursor:pointer}.check input{accent-color:#3c7457;width:14px;height:14px;margin:0}.below{display:grid;grid-template-columns:1fr 1fr;gap:60px;padding:29px 5px 62px}.below p{font-size:12px;line-height:1.8;color:#849087;margin:8px 0 0}.below .details{color:#5b715f}footer{border-top:1px solid var(--line);display:flex;justify-content:space-between;padding:20px 0 30px;color:#9ba59c;font-size:11px}@media(max-width:800px){.shell{padding:0 18px}.topbar{height:70px}.intro{padding:48px 0 38px}.intro h1{letter-spacing:-2px}.panes,.below{grid-template-columns:1fr}.pane+.pane{border-left:none;border-top:1px solid var(--line)}.below{gap:24px;padding-bottom:35px}.editor{margin:0 16px}.output{width:calc(100% - 32px);margin:0 16px}.pane-header{padding:18px 16px}.pane-footer{padding:10px 16px}.workspace-header,.settings-row{padding:13px 16px}.tiny-hint{display:none}.local-label{font-size:0}.local-dot{width:8px;height:8px}.editor,.editor textarea,.output{min-height:270px;height:270px}footer{gap:10px;flex-wrap:wrap}}
+
+/* Themes: the saved preference changes appearance only, never input content. */
+:root{color-scheme:light}
+.topbar-right{display:flex;align-items:center;gap:24px}
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);border-radius:8px;background:transparent;color:inherit;padding:8px 11px;font-size:12px;font-weight:600;min-width:92px;transition:background .15s,border-color .15s}
+.theme-toggle:hover{background:#f0f3ef}
+#theme-icon{font-size:16px;line-height:1}
+:root[data-theme="dark"]{color-scheme:dark;--line:#303b35;--muted:#9daea1;--green:#79b994;color:#e5ebe6;background:#121815}
+[data-theme="dark"] .brand-symbol{background:#324a3c}
+[data-theme="dark"] .local-label{color:#a0b0a4}
+[data-theme="dark"] .eyebrow,[data-theme="dark"] .subheading{color:#91ab99}
+[data-theme="dark"] .intro p{color:#aab7ac}
+[data-theme="dark"] .workspace{background:#1b231e;border-color:#354239;box-shadow:0 9px 35px #0002}
+[data-theme="dark"] .soft-text{color:#9cac9e}
+[data-theme="dark"] .button-text{color:#bbc9bd}
+[data-theme="dark"] .button-text:hover{background:#2a382f;color:#f3f7f3}
+[data-theme="dark"] .button-primary{background:#5d9b73;color:#09140d}
+[data-theme="dark"] .button-primary:hover:not(:disabled){background:#7db68d}
+[data-theme="dark"] .pane-number,[data-theme="dark"] .tiny-hint{color:#91a296}
+[data-theme="dark"] .highlight-layer,[data-theme="dark"] .output{background:#141c17;border-color:#36443a}
+[data-theme="dark"] .output{color:#d9e5db}
+[data-theme="dark"] .editor textarea{color:#d9e5db;-webkit-text-fill-color:#d9e5db;caret-color:#eef8ef}
+[data-theme="dark"] .editor textarea::placeholder{color:#849788;-webkit-text-fill-color:#849788}
+
+[data-theme="dark"] .highlight-layer mark{background:#806632;color:transparent;-webkit-text-fill-color:transparent}
+[data-theme="dark"] .pane-footer{color:#99ab9c}
+[data-theme="dark"] .settings-row{background:#202b23}
+[data-theme="dark"] .settings-head{color:#a7b7a8}
+[data-theme="dark"] .check{color:#cad6cc}
+[data-theme="dark"] .check input{accent-color:#80ba90}
+[data-theme="dark"] .below p{color:#a7b6aa}
+[data-theme="dark"] .below .details{color:#9ac5a4}
+[data-theme="dark"] footer{color:#95a599}
+[data-theme="dark"] .theme-toggle{border-color:#415346}
+[data-theme="dark"] .theme-toggle:hover{background:#28362d}
+@media(max-width:800px){.topbar-right{gap:12px}.theme-toggle{min-width:unset}.theme-toggle #theme-label{display:none}}
+
+
+/* Detection settings: collapsed by default with accessible switches. */
+.quick-settings{border-top:1px solid var(--line);background:#fcfdfb}
+.quick-settings-summary{display:flex;align-items:center;gap:13px;min-height:59px;padding:0 22px;cursor:pointer;list-style:none;user-select:none}
+.quick-settings-summary::-webkit-details-marker{display:none}
+.quick-settings-title{font-size:12px;font-weight:670;color:#526054}
+.quick-settings-meta{font-size:11px;color:#87978a;margin-left:auto}
+.quick-settings-chevron{height:8px;width:8px;border-right:1.8px solid currentColor;border-bottom:1.8px solid currentColor;transform:rotate(45deg);margin:0 3px 5px;color:#829087;transition:transform .15s}
+.quick-settings[open] .quick-settings-chevron{transform:rotate(225deg);margin:5px 3px 0}
+.quick-settings-summary:hover{background:#f5f8f4}
+.quick-settings-summary:focus-visible{outline:2px solid #72a283;outline-offset:-4px;border-radius:3px}
+.quick-settings.has-disabled .quick-settings-meta{color:#966d37}
+.quick-settings-content{border-top:1px solid var(--line);padding:22px}
+.settings-intro{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#829087;font-size:12px;margin-bottom:20px}
+.settings-reset{border:0;background:transparent;padding:6px 0;color:#3c7457;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.settings-reset:hover:not(:disabled){text-decoration:underline}
+.settings-reset:disabled{opacity:.42;cursor:default}
+.detection-groups{display:grid;grid-template-columns:1.3fr 1fr .95fr;gap:26px}
+.detection-group{min-width:0}
+.detection-group h3{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#87978a;margin:0 0 8px;font-weight:750}
+.detection-option{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer;min-height:58px}
+.detection-option:last-child{border-bottom:0}
+.detection-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+.detection-name{font-size:12px;font-weight:600;color:#344b3a}
+.detection-description{font-size:10px;line-height:1.45;color:#92a096}
+.switch{width:39px;height:24px;position:relative;display:inline-block;flex:none}
+.switch input{position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;cursor:pointer;z-index:2}
+.switch-track{display:block;width:39px;height:24px;border:1px solid #d4d9d5;border-radius:999px;background:#e4e8e4;transition:background .16s,border-color .16s}
+.switch-track::after{content:"";display:block;width:18px;height:18px;margin:2px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:transform .16s}
+.switch input:checked + .switch-track{background:#35a56a;border-color:#35a56a}
+.switch input:checked + .switch-track::after{transform:translateX(15px)}
+.switch input:focus-visible + .switch-track{outline:2px solid #72a283;outline-offset:3px}
+.settings-note{font-size:11px;color:#89958a;line-height:1.55;margin:20px 0 0}
+[data-theme="dark"] .quick-settings{background:#202b23}
+[data-theme="dark"] .quick-settings-summary:hover{background:#28362d}
+[data-theme="dark"] .quick-settings-title,[data-theme="dark"] .detection-name{color:#d6e4d7}
+[data-theme="dark"] .quick-settings-meta,[data-theme="dark"] .settings-intro,[data-theme="dark"] .settings-note{color:#a2b1a4}
+[data-theme="dark"] .quick-settings.has-disabled .quick-settings-meta{color:#f0c88f}
+[data-theme="dark"] .detection-group h3,[data-theme="dark"] .detection-description{color:#92a494}
+[data-theme="dark"] .settings-reset{color:#91c6a0}
+[data-theme="dark"] .switch-track{background:#536057;border-color:#5c6a60}
+[data-theme="dark"] .switch input:checked + .switch-track{background:#39ae70;border-color:#39ae70}
+@media(max-width:900px){.detection-groups{grid-template-columns:1fr 1fr}.detection-group:first-child{grid-row:span 2}}
+@media(max-width:600px){.quick-settings-summary{padding:0 16px}.quick-settings-content{padding:18px 16px}.detection-groups{grid-template-columns:1fr;gap:24px}.detection-group:first-child{grid-row:auto}.settings-intro{align-items:start}.detection-description{font-size:11px}}
+
+
+/* PDF mode - matches SafePaste's restrained light/dark design. */
+[hidden]{display:none!important}
+.mode-tabs{display:flex;gap:5px;margin:-16px 0 22px;border-bottom:1px solid var(--line)}
+.mode-tab{position:relative;border:0;background:transparent;color:#7b897e;cursor:pointer;padding:13px 22px;font:600 13px/1.4 inherit;border-bottom:2px solid transparent}
+.mode-tab.active{color:#2f6645;border-bottom-color:#468762}
+.mode-tab:hover{background:#f0f4f0}
+.pdf-area{padding:0 0 10px}
+.pdf-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 22px;border-bottom:1px solid var(--line)}
+.pdf-head h2{font-size:13px;font-weight:700;margin:0}
+.pdf-empty{padding:56px 24px;text-align:center}
+.pdf-upload-icon{margin:0 auto 18px;display:grid;place-items:center;border:1px solid var(--line);border-radius:13px;width:54px;height:54px;font-size:23px;color:#447c57}
+.pdf-empty h3{font-size:18px;margin:0 0 9px}
+.pdf-empty p{max-width:550px;font-size:12px;color:#7a877d;line-height:1.8;margin:0 auto 17px}
+.pdf-open{padding:11px 17px}
+.pdf-status{font-size:12px;line-height:1.5;color:#568467;padding:13px 0;min-height:24px}
+.pdf-error{color:#b45146}
+.pdf-intro-note{font-size:11px;color:#8b978c;line-height:1.5;margin:10px auto 0;max-width:520px}
+.pdf-ready{padding:17px 22px 24px}
+.pdf-filebar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.pdf-file-name{font-size:13px;font-weight:700;overflow-wrap:anywhere}
+.pdf-count{color:#849386;font-size:11px;margin:8px 0 15px}
+.pdf-review-grid{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(240px,.9fr);gap:18px}
+.pdf-preview-column{min-width:0}
+.pdf-pager{display:flex;gap:12px;justify-content:space-between;align-items:center;margin-bottom:10px}
+.pdf-page-number{font-size:12px;font-weight:600}
+.pdf-pager-controls{display:flex;gap:5px}
+.pdf-viewer{border:1px solid var(--line);background:#edf0eb;border-radius:9px;overflow:auto;max-height:620px;padding:18px;display:flex;justify-content:center;align-items:flex-start}
+.pdf-canvas-wrap{display:inline-block;position:relative;max-width:none;box-shadow:0 6px 25px #0002}
+.pdf-canvas-wrap canvas{display:block;max-width:none}
+.pdf-overlay{position:absolute;top:0;left:0;touch-action:none;cursor:crosshair}
+.pdf-preview-caption{font-size:11px;line-height:1.6;color:#869487;margin:10px 0 0}
+.pdf-options{border:1px solid var(--line);background:#fbfcfa;border-radius:9px;padding:16px}
+.pdf-options h3{font-size:13px;margin:0 0 11px}
+.pdf-options p{font-size:11px;line-height:1.7;color:#78867b;margin:0 0 13px}
+.pdf-warning{font-size:11px;line-height:1.65;color:#667b6a;padding:11px 12px;border:1px solid var(--line);border-radius:7px;background:#f6f8f4;margin-bottom:16px}
+.pdf-warning-strong{color:#8a6234;background:#fff9ea;border-color:#e9dbb5}
+.pdf-tools{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+.pdf-option-check{display:flex;align-items:flex-start;gap:10px;margin:13px 0;color:#344b3a;font-size:11.5px;line-height:1.55;cursor:pointer}
+.pdf-option-check input{margin:2px 0 0;accent-color:#3d8b60}
+.pdf-raster-warning{background:#f4f7f2;border:1px solid #dce5da;border-radius:8px;padding:12px;margin:15px 0}
+.pdf-raster-warning strong{display:block;font-size:12px;color:#345740;margin-bottom:4px}
+.pdf-raster-warning p{margin:0!important}
+.pdf-export{width:100%;margin-top:3px;padding:12px 16px}
+.pdf-support{font-size:11px;color:#879388;line-height:1.65;padding:15px 22px;border-top:1px solid var(--line)}
+[data-theme="dark"] .mode-tab{color:#a2b2a4}
+[data-theme="dark"] .mode-tab.active{color:#9ad5aa;border-bottom-color:#82c596}
+[data-theme="dark"] .mode-tab:hover{background:#263329}
+[data-theme="dark"] .pdf-upload-icon{color:#94c7a2}
+[data-theme="dark"] .pdf-empty p,[data-theme="dark"] .pdf-intro-note,[data-theme="dark"] .pdf-count{color:#a8b8ab}
+[data-theme="dark"] .pdf-status{color:#94c8a2}
+[data-theme="dark"] .pdf-error{color:#efa29a}
+[data-theme="dark"] .pdf-viewer{background:#141c17}
+[data-theme="dark"] .pdf-options{background:#1a251d}
+[data-theme="dark"] .pdf-options p,[data-theme="dark"] .pdf-preview-caption,[data-theme="dark"] .pdf-support{color:#a8baac}
+[data-theme="dark"] .pdf-warning{background:#26382b;color:#b5d2bb;border-color:#3b4f40}
+[data-theme="dark"] .pdf-warning-strong{background:#3a3120;color:#f1c998;border-color:#635237}
+[data-theme="dark"] .pdf-option-check{color:#d7e7d9}
+[data-theme="dark"] .pdf-raster-warning{background:#26372b;border-color:#415948}
+[data-theme="dark"] .pdf-raster-warning strong{color:#a7d5b4}
+@media(max-width:800px){.pdf-review-grid{grid-template-columns:1fr}.pdf-viewer{max-height:520px}.pdf-head,.pdf-ready{padding-left:16px;padding-right:16px}}
+
+/* Interactive redaction review: a small, keyboard-accessible × per rectangle. */
+.pdf-remove-layer{position:absolute;top:0;left:0;pointer-events:none;overflow:visible}
+.pdf-remove-rect{position:absolute;display:grid;place-items:center;width:22px;height:22px;
+  border:1px solid #fff;border-radius:6px;color:#fff;background:#9c3434;
+  font:700 17px/1 system-ui,-apple-system,sans-serif;cursor:pointer;
+  box-shadow:0 1px 5px #0007;pointer-events:auto;padding:0;z-index:4}
+.pdf-remove-rect:hover{background:#cf3434;transform:scale(1.07)}
+.pdf-remove-rect:focus-visible{outline:3px solid #7cc59a;outline-offset:2px}
+
+
+/* Local TXT / JSON / Markdown import and protected download. */
+[hidden]{display:none!important}
+.workspace-actions{flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.text-file-info{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 22px;border-bottom:1px solid var(--line);background:#f8faf7;font-size:11px}
+.text-file-label{color:#718173;font-weight:600}
+.text-file-name{color:#30583c;font-family:var(--mono);overflow-wrap:anywhere}
+.text-file-hint{color:#8b988e;margin-left:auto}
+.text-file-status{padding:9px 22px;font-size:11px;color:#3d7650;background:#f3f8f3;border-bottom:1px solid var(--line)}
+.text-file-status.is-error{color:#a23b36;background:#fff3f0}
+.button-download{border:1px solid var(--line);white-space:nowrap}
+.pane-footer{flex-wrap:wrap}
+.pane-footer>div{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+[data-theme="dark"] .text-file-info{background:#202b23}
+[data-theme="dark"] .text-file-label{color:#9eb2a0}
+[data-theme="dark"] .text-file-name{color:#b5dbbb}
+[data-theme="dark"] .text-file-hint{color:#839b88}
+[data-theme="dark"] .text-file-status{color:#a1caa8;background:#233429}
+[data-theme="dark"] .text-file-status.is-error{color:#fac4bb;background:#402722}
+[data-theme="dark"] .button-download{border-color:#405346}
+@media(max-width:800px){.workspace-header{gap:10px;flex-wrap:wrap}.workspace-actions{justify-content:flex-start}.text-file-info,.text-file-status{padding-left:16px;padding-right:16px}.text-file-hint{margin-left:0}}
+
+.output-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+
+/* File replacement status remains visible when a PDF is already loaded. */
+.pdf-ready-status{margin:3px 0 8px;padding:0;min-height:0;font-size:11px}
+/* Compact language controls share the theme control's visual weight. */
+.language-switch{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);flex-shrink:0}
+.language-switch button{border:0;background:none;color:inherit;font:inherit;padding:7px 3px;cursor:pointer;border-radius:4px}
+.language-switch button[aria-pressed="true"]{color:var(--green);font-weight:700}
+.language-switch button:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+@media(max-width:600px){.topbar-right{gap:10px}.language-switch{gap:2px}}
+</style>
+</head>
+<body id="top">
+  <div class="shell">
+    <header class="topbar">
+      <a class="wordmark" href="#top" aria-label="SafePaste, home" data-i18n-aria-label="ui.home"><span class="brand-symbol" aria-hidden="true">s<span>.</span></span> SafePaste</a>
+      <div class="topbar-right"><span class="local-label"><span class="local-dot"></span> <span data-i18n="ui.local">Everything happens in your browser</span></span><div class="language-switch" role="group" data-i18n-aria-label="language.label" aria-label="Language"><button type="button" data-locale="pt-BR" lang="pt-BR" aria-label="Português brasileiro" aria-pressed="false">PT</button><span aria-hidden="true">|</span><button type="button" data-locale="en-US" lang="en-US" aria-label="English (US)" aria-pressed="true">EN</button></div><button id="theme-toggle" class="theme-toggle" type="button" aria-label="Enable dark theme" title="Enable dark theme"><span id="theme-icon" aria-hidden="true">☾</span><span id="theme-label">Dark</span></button></div>
+    </header>
+    <main>
+      <section class="intro">
+        <div class="eyebrow" data-i18n="ui.eyebrow">LOCAL TOOL</div>
+        <h1><span data-i18n="ui.headingFirst">Protect before</span><br><span data-i18n="ui.headingSecond">you share</span><span class="period">.</span></h1>
+        <p data-i18n="ui.intro">Hide tokens, credentials and personal data before sending logs, configuration or code snippets to an AI.</p>
+      </section>
+      <nav class="mode-tabs" role="tablist" aria-label="File type" data-i18n-aria-label="ui.fileType">
+        <button type="button" id="mode-text" class="mode-tab active" role="tab" aria-selected="true" aria-controls="text-mode" data-i18n="ui.textTab">Text and code</button>
+        <button type="button" id="mode-pdf" class="mode-tab" role="tab" aria-selected="false" aria-controls="pdf-mode">PDF <span class="soft-text" data-i18n="ui.pdfTab">· experimental</span></button>
+      </nav>
+      <div id="text-mode" role="tabpanel" aria-labelledby="mode-text">
+      <section class="workspace" aria-label="Sanitization editor" data-i18n-aria-label="ui.editorLabel">
+        <div class="workspace-header">
+          <div class="workspace-title"><span data-i18n="ui.editor">Editor</span> <span class="soft-text" data-i18n="ui.editorSubtitle">/ text sanitization</span></div>
+          <div class="workspace-actions"><input type="file" id="text-file" accept=".txt,.json,.md,text/plain,application/json,text/markdown" aria-label="Import a TXT, JSON or Markdown file" data-i18n-aria-label="ui.importLabel" hidden><button id="text-pick" class="button button-text" type="button" data-i18n="ui.import">Import file</button><button id="example" class="button button-text" type="button" data-i18n="ui.example">Use example</button><button id="clear" class="button button-text" type="button" data-i18n="ui.clear">Clear all</button></div>
+        </div>
+        <div class="text-file-info" id="text-file-info" hidden>
+      <span class="text-file-label" data-i18n="ui.localFile">Local file</span><span class="text-file-name" id="text-file-name"></span>
+      <span class="text-file-hint" data-i18n="ui.editable">Editable · no upload</span>
+    </div>
+    <div class="text-file-status" id="text-file-status" role="status" aria-live="polite" hidden></div>
+    <div class="panes">
+          <section class="pane" aria-labelledby="original-title">
+            <div class="pane-header"><div><span class="pane-number">01</span><h2 id="original-title" data-i18n="ui.original">Original text</h2></div><span class="tiny-hint" data-i18n="ui.highlightHint">Detected data is highlighted</span></div>
+            <div class="editor" id="editor">
+              <pre class="highlight-layer" id="highlight" aria-hidden="true"></pre>
+              <textarea id="input" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Original text" data-i18n-aria-label="ui.original" placeholder="Paste your text here…" data-i18n-placeholder="ui.inputPlaceholder"></textarea>
+            </div>
+            <div class="pane-footer"><span id="original-status" role="status">Waiting for text</span><span id="char-count">0 characters</span></div>
+          </section>
+          <section class="pane" aria-labelledby="protected-title">
+            <div class="pane-header"><div><span class="pane-number">02</span><h2 id="protected-title" data-i18n="ui.protected">Protected text</h2></div><span class="tiny-hint" data-i18n="ui.outputHint">Ready to review and copy</span></div>
+            <textarea id="output" class="output" readonly spellcheck="false" aria-label="Protected text" data-i18n-aria-label="ui.protected" placeholder="Protected text will appear here…" data-i18n-placeholder="ui.outputPlaceholder"></textarea>
+            <div class="pane-footer"><span id="protected-status">No replacements</span><div class="output-actions"><button id="download-text" class="button button-text button-download" type="button" disabled data-i18n="ui.download">Download protected ↓</button><button id="copy" class="button button-primary" type="button" disabled>Copy text ↗</button></div></div>
+          </section>
+        </div>
+        <details class="quick-settings" id="detection-settings">
+  <summary class="quick-settings-summary"><span class="quick-settings-title" data-i18n="ui.settings">What to detect</span><span class="quick-settings-meta" id="detection-summary" aria-live="polite">All enabled</span><span class="quick-settings-chevron" aria-hidden="true"></span></summary>
+  <div class="quick-settings-content">
+    <div class="settings-intro"><span data-i18n="ui.settingsIntro">Choose the types of information you want to protect.</span><button id="enable-all" class="settings-reset" type="button" data-i18n="ui.enableAll">Enable all</button></div>
+    <div class="detection-groups">
+      <section class="detection-group" aria-label="Credentials and access" data-i18n-aria-label="ui.credentials">
+        <h3 data-i18n="ui.credentials">Credentials and access</h3>
+        <label class="detection-option"><span class="detection-copy"><span class="detection-name" data-i18n="ui.assignments">Secrets in variables</span><span class="detection-description" data-i18n="ui.assignmentsHint">API_TOKEN, password, DATABASE_URL</span></span><span class="switch"><input type="checkbox" role="switch" data-detector="assignments" id="det-assignments" checked aria-label="Secrets in variables" data-i18n-aria-label="ui.assignments"><span class="switch-track" aria-hidden="true"></span></span></label>
+        <label class="detection-option"><span class="detection-copy"><span class="detection-name" data-i18n="ui.tokens">Known tokens</span><span class="detection-description" data-i18n="ui.tokensHint">Keys with recognized prefixes</span></span><span class="switch"><input type="checkbox" role="switch" data-detector="tokens" id="det-tokens" checked aria-label="Known tokens" data-i18n-aria-label="ui.tokens"><span class="switch-track" aria-hidden="true"></span></span></label>
+        <label class="detection-option"><span class="detection-copy"><span class="detection-name" data-i18n="ui.bearer">Bearer authorization</span><span class="detection-description" data-i18n="ui.bearerHint">Authentication headers</span></span><span class="switch"><input type="checkbox" role="switch" data-detector="bearer" id="det-bearer" checked aria-label="Bearer authorization" data-i18n-aria-label="ui.bearer"><span class="switch-track" aria-hidden="true"></span></span></label>
+        <label class="detection-option"><span class="detection-copy"><span class="detection-name" data-i18n="ui.jwt">JWT tokens</span><span class="detection-description" data-i18n="ui.jwtHint">Three-part tokens</span></span><span class="switch"><input type="checkbox" role="switch" data-detector="jwt" id="det-jwt" checked aria-label="JWT tokens" data-i18n-aria-label="ui.jwt"><span class="switch-track" aria-hidden="true"></span></span></label>
+        <label class="detection-option"><span class="detection-copy"><span class="detection-name" data-i18n="ui.privateKeys">Private keys</span><span class="detection-description" data-i18n="ui.privateKeysHint">PEM private key blocks</span></span><span class="switch"><input type="checkbox" role="switch" data-detector="privateKeys" id="det-privateKeys" checked aria-label="Private keys" data-i18n-aria-label="ui.privateKeys"><span class="switch-track" aria-hidden="true"></span></span></label>
+        <label class="detection-option"><span class="detection-copy"><span class="detection-name" data-i18n="ui.urlCredentials">Passwords in URLs</span><span class="detection-description" data-i18n="ui.urlCredentialsHint">Usernames and passwords in connections</span></span><span class="switch"><input type="checkbox" role="switch" data-detector="urlCredentials" id="det-urlCredentials" checked aria-label="Passwords in URLs" data-i18n-aria-label="ui.urlCredentials"><span class="switch-track" aria-hidden="true"></span></span></label>
+      </section>
+      <section class="detection-group" aria-label="Personal data" data-i18n-aria-label="ui.personal">
+        <h3 data-i18n="ui.personal">Personal data</h3>
+        <label class="detection-option"><span class="detection-copy"><span class="detection-name" data-i18n="ui.cpf">CPF</span><span class="detection-description" data-i18n="ui.cpfHint">With and without punctuation</span></span><span class="switch"><input type="checkbox" role="switch" data-detector="cpf" id="det-cpf" checked aria-label="CPF" data-i18n-aria-label="ui.cpf"><span class="switch-track" aria-hidden="true"></span></span></label>
+        <label class="detection-option"><span class="detection-copy"><span class="detection-name" data-i18n="ui.cnpj">CNPJ</span><span class="detection-description" data-i18n="ui.cnpjHint">Recognizable formats with or without punctuation</span></span><span class="switch"><input type="checkbox" role="switch" data-detector="cnpj" id="det-cnpj" checked aria-label="CNPJ" data-i18n-aria-label="ui.cnpj"><span class="switch-track" aria-hidden="true"></span></span></label>
+        <label class="detection-option"><span class="detection-copy"><span class="detection-name" data-i18n="ui.emails">Emails</span><span class="detection-description" data-i18n="ui.emailsHint">Email addresses</span></span><span class="switch"><input type="checkbox" role="switch" data-detector="emails" id="det-emails" checked aria-label="Emails" data-i18n-aria-label="ui.emails"><span class="switch-track" aria-hidden="true"></span></span></label>
+        <label class="detection-option"><span class="detection-copy"><span class="detection-name" data-i18n="ui.phones">Phone numbers</span><span class="detection-description" data-i18n="ui.phonesHint">Brazilian mobile, landline, +55 and 0800</span></span><span class="switch"><input type="checkbox" role="switch" data-detector="phones" id="det-phones" checked aria-label="Phone numbers" data-i18n-aria-label="ui.phones"><span class="switch-track" aria-hidden="true"></span></span></label>
+        <label class="detection-option"><span class="detection-copy"><span class="detection-name" data-i18n="ui.addresses">Addresses and postal codes</span><span class="detection-description" data-i18n="ui.addressesHint">Brazilian street, number, unit and postal code</span></span><span class="switch"><input type="checkbox" role="switch" data-detector="addresses" id="det-addresses" checked aria-label="Addresses and postal codes" data-i18n-aria-label="ui.addresses"><span class="switch-track" aria-hidden="true"></span></span></label>
+      </section>
+      <section class="detection-group" aria-label="Infrastructure and IDs" data-i18n-aria-label="ui.infrastructure">
+        <h3 data-i18n="ui.infrastructure">Infrastructure and IDs</h3>
+        <label class="detection-option"><span class="detection-copy"><span class="detection-name" data-i18n="ui.ip">IP addresses</span><span class="detection-description" data-i18n="ui.ipHint">IPv4</span></span><span class="switch"><input type="checkbox" role="switch" data-detector="ip" id="det-ip" checked aria-label="IP addresses" data-i18n-aria-label="ui.ip"><span class="switch-track" aria-hidden="true"></span></span></label>
+        <label class="detection-option"><span class="detection-copy"><span class="detection-name" data-i18n="ui.uuid">UUIDs</span><span class="detection-description" data-i18n="ui.uuidHint">Standard identifiers</span></span><span class="switch"><input type="checkbox" role="switch" data-detector="uuid" id="det-uuid" checked aria-label="UUIDs" data-i18n-aria-label="ui.uuid"><span class="switch-track" aria-hidden="true"></span></span></label>
+      </section>
+    </div>
+    <p class="settings-note" data-i18n="ui.settingsNote">Some patterns overlap. Disabling a category reduces protection; always review the text before copying.</p>
+  </div>
+</details>
+      </section>
+      <div class="below"><div><span class="subheading" data-i18n="ui.results">About the results</span><p id="details" class="details" role="status" aria-live="polite">No analysis yet.</p></div><div class="disclaimer"><span class="subheading" data-i18n="ui.important">Important</span><p data-i18n="ui.disclaimer">Pattern matching may miss sensitive information, especially names, addresses without numbers, data in images and secrets without a recognizable format. Review protected text before sharing. No text is sent, saved or analyzed by external services.</p></div></div>
+      </div>
+      <div id="pdf-mode" role="tabpanel" aria-labelledby="mode-pdf" hidden>
+        <section class="workspace pdf-area" aria-label="PDF sanitization" data-i18n-aria-label="ui.pdfEditor">
+          <div class="pdf-head"><h2><span data-i18n="ui.pdfEditor">PDF sanitization</span> <span class="soft-text" data-i18n="ui.pdfSubtitle">/ preview and redactions</span></h2><span class="tiny-hint" data-i18n="ui.pdfExperimental">Experimental · processed in your browser</span></div>
+          <div id="pdf-empty" class="pdf-empty">
+            <div class="pdf-upload-icon" aria-hidden="true">▤</div>
+            <h3 data-i18n="ui.pdfSelect">Select a PDF</h3>
+            <p data-i18n="ui.pdfIntro">We detect patterns in extractable text and suggest redactions on the pages. You can add redactions manually before exporting.</p>
+            <input id="pdf-file" type="file" accept=".pdf,application/pdf" hidden aria-label="Choose a PDF file" data-i18n-aria-label="ui.pdfFile">
+            <button id="pdf-pick" class="button button-primary pdf-open" type="button" data-i18n="ui.pdfPick">Choose PDF</button>
+            <p class="pdf-intro-note" data-i18n="ui.pdfLimits">Up to 25 MB and 30 pages. PDF.js loads over the internet; the selected file is not uploaded to a server. There is no OCR for scanned PDFs. Brazilian phone numbers, addresses and postal codes are detected in extractable text and require review.</p>
+            <div id="pdf-message" class="pdf-status" role="status" aria-live="polite">No PDF selected.</div>
+          </div>
+          <div id="pdf-ready" class="pdf-ready" hidden>
+            <div class="pdf-filebar"><span class="pdf-file-name" id="pdf-name"></span><button id="pdf-restart" class="button button-text" type="button" data-i18n="ui.pdfRestart">Replace file</button></div>
+            <div id="pdf-ready-message" class="pdf-status pdf-ready-status" role="status" aria-live="polite"></div>
+            <div id="pdf-stats" class="pdf-count"></div>
+            <div class="pdf-review-grid">
+              <div class="pdf-preview-column">
+                <div class="pdf-pager"><span id="pdf-page" class="pdf-page-number">Page 1</span><div class="pdf-pager-controls"><button class="button button-text" id="pdf-prev" type="button" data-i18n="ui.pdfPrev">← Previous</button><button class="button button-text" id="pdf-next" type="button" data-i18n="ui.pdfNext">Next →</button></div></div>
+                <div class="pdf-viewer"><div class="pdf-canvas-wrap"><canvas id="pdf-canvas" aria-label="Page preview" data-i18n-aria-label="ui.pdfCanvas"></canvas><canvas id="pdf-overlay" class="pdf-overlay" aria-label="Drag to draw a manual redaction" data-i18n-aria-label="ui.pdfOverlay"></canvas><div id="pdf-remove-layer" class="pdf-remove-layer" aria-label="Redaction removal buttons" data-i18n-aria-label="ui.pdfRemoveLayer"></div></div></div>
+                <p class="pdf-preview-caption"><span data-i18n="ui.pdfCaptionBefore">Drag on the page to draw a redaction. Click the</span> <strong>×</strong> <span data-i18n="ui.pdfCaptionAfter">on any rectangle to remove it (including automatic ones). Check every page.</span></p>
+              </div>
+              <aside class="pdf-options">
+                <h3 data-i18n="ui.pdfReview">Review the information</h3>
+                <div id="pdf-warning" class="pdf-warning" role="status"></div>
+                <p data-i18n="ui.pdfCoverage">Automatic redactions may cover an entire line to avoid leaving part of a secret visible. The tool does not recognize images, faces or all personal data.</p>
+                <div class="pdf-tools">
+                  <button id="pdf-undo" type="button" class="button button-text" data-i18n="ui.pdfUndo">Undo last</button>
+                  <button id="pdf-clear" type="button" class="button button-text" data-i18n="ui.pdfClear">Clear manual</button>
+                  <button id="pdf-restore-auto" type="button" class="button button-text" data-i18n="ui.pdfRestore">Restore automatic</button>
+                </div>
+                <label class="pdf-option-check"><input type="checkbox" id="pdf-reviewed"><span data-i18n="ui.pdfReviewed">I reviewed every page and checked for exposed sensitive data.</span></label>
+                <div class="pdf-raster-warning">
+                  <strong data-i18n="ui.pdfRasterTitle">Warning: the PDF will be converted to images</strong>
+                  <p data-i18n="ui.pdfRasterInfo">The new PDF will retain page appearance and order, but text will no longer be selectable or searchable. Forms, links, digital signatures and text accessibility will be lost.</p>
+                </div>
+                <label class="pdf-option-check"><input type="checkbox" id="pdf-raster"><span data-i18n="ui.pdfRasterAccepted">I understand that the document will be converted to image pages.</span></label>
+                <button id="pdf-export" type="button" class="button button-primary pdf-export" disabled data-i18n="ui.pdfExport">Generate redacted PDF ↓</button>
+              </aside>
+            </div>
+          </div>
+          <div class="pdf-support" data-i18n="ui.pdfPrivacy">Privacy: the original PDF stays in your browser; the output is a new document with black pixels applied to the images. Review the result before sharing. Scanned PDFs require manual redactions; automatic detection does not guarantee anonymization.</div>
+        </section>
+      </div>
+    </main>
+    <footer><span>SafePaste</span></footer>
+  </div>
+<script>
+const enUS = {
+  "ui.home": "SafePaste, home",
+  "ui.local": "Everything happens in your browser",
+  "ui.eyebrow": "LOCAL TOOL",
+  "ui.headingFirst": "Protect before",
+  "ui.headingSecond": "you share",
+  "ui.intro": "Hide tokens, credentials and personal data before sending logs, configuration or code snippets to an AI.",
+  "ui.fileType": "File type",
+  "ui.textTab": "Text and code",
+  "ui.pdfTab": "· experimental",
+  "ui.editorLabel": "Sanitization editor",
+  "ui.editor": "Editor",
+  "ui.editorSubtitle": "/ text sanitization",
+  "ui.importLabel": "Import a TXT, JSON or Markdown file",
+  "ui.import": "Import file",
+  "ui.example": "Use example",
+  "ui.clear": "Clear all",
+  "ui.localFile": "Local file",
+  "ui.editable": "Editable · no upload",
+  "ui.original": "Original text",
+  "ui.highlightHint": "Detected data is highlighted",
+  "ui.inputPlaceholder": "Paste your text here…",
+  "ui.protected": "Protected text",
+  "ui.outputHint": "Ready to review and copy",
+  "ui.outputPlaceholder": "Protected text will appear here…",
+  "ui.download": "Download protected ↓",
+  "ui.settings": "What to detect",
+  "ui.settingsIntro": "Choose the types of information you want to protect.",
+  "ui.enableAll": "Enable all",
+  "ui.credentials": "Credentials and access",
+  "ui.personal": "Personal data",
+  "ui.infrastructure": "Infrastructure and IDs",
+  "ui.assignments": "Secrets in variables",
+  "ui.assignmentsHint": "API_TOKEN, password, DATABASE_URL",
+  "ui.tokens": "Known tokens",
+  "ui.tokensHint": "Keys with recognized prefixes",
+  "ui.bearer": "Bearer authorization",
+  "ui.bearerHint": "Authentication headers",
+  "ui.jwt": "JWT tokens",
+  "ui.jwtHint": "Three-part tokens",
+  "ui.privateKeys": "Private keys",
+  "ui.privateKeysHint": "PEM private key blocks",
+  "ui.urlCredentials": "Passwords in URLs",
+  "ui.urlCredentialsHint": "Usernames and passwords in connections",
+  "ui.cpf": "CPF",
+  "ui.cpfHint": "With and without punctuation",
+  "ui.cnpj": "CNPJ",
+  "ui.cnpjHint": "Recognizable formats with or without punctuation",
+  "ui.emails": "Emails",
+  "ui.emailsHint": "Email addresses",
+  "ui.phones": "Phone numbers",
+  "ui.phonesHint": "Brazilian mobile, landline, +55 and 0800",
+  "ui.addresses": "Addresses and postal codes",
+  "ui.addressesHint": "Brazilian street, number, unit and postal code",
+  "ui.ip": "IP addresses",
+  "ui.ipHint": "IPv4",
+  "ui.uuid": "UUIDs",
+  "ui.uuidHint": "Standard identifiers",
+  "ui.settingsNote": "Some patterns overlap. Disabling a category reduces protection; always review the text before copying.",
+  "ui.results": "About the results",
+  "ui.important": "Important",
+  "ui.disclaimer": "Pattern matching may miss sensitive information, especially names, addresses without numbers, data in images and secrets without a recognizable format. Review protected text before sharing. No text is sent, saved or analyzed by external services.",
+  "ui.pdfEditor": "PDF sanitization",
+  "ui.pdfSubtitle": "/ preview and redactions",
+  "ui.pdfExperimental": "Experimental · processed in your browser",
+  "ui.pdfSelect": "Select a PDF",
+  "ui.pdfIntro": "We detect patterns in extractable text and suggest redactions on the pages. You can add redactions manually before exporting.",
+  "ui.pdfFile": "Choose a PDF file",
+  "ui.pdfPick": "Choose PDF",
+  "ui.pdfLimits": "Up to 25 MB and 30 pages. PDF.js loads over the internet; the selected file is not uploaded to a server. There is no OCR for scanned PDFs. Brazilian phone numbers, addresses and postal codes are detected in extractable text and require review.",
+  "ui.pdfRestart": "Replace file",
+  "ui.pdfPrev": "← Previous",
+  "ui.pdfNext": "Next →",
+  "ui.pdfCanvas": "Page preview",
+  "ui.pdfOverlay": "Drag to draw a manual redaction",
+  "ui.pdfRemoveLayer": "Redaction removal buttons",
+  "ui.pdfCaptionBefore": "Drag on the page to draw a redaction. Click the",
+  "ui.pdfCaptionAfter": "on any rectangle to remove it (including automatic ones). Check every page.",
+  "ui.pdfReview": "Review the information",
+  "ui.pdfCoverage": "Automatic redactions may cover an entire line to avoid leaving part of a secret visible. The tool does not recognize images, faces or all personal data.",
+  "ui.pdfUndo": "Undo last",
+  "ui.pdfClear": "Clear manual",
+  "ui.pdfRestore": "Restore automatic",
+  "ui.pdfReviewed": "I reviewed every page and checked for exposed sensitive data.",
+  "ui.pdfRasterTitle": "Warning: the PDF will be converted to images",
+  "ui.pdfRasterInfo": "The new PDF will retain page appearance and order, but text will no longer be selectable or searchable. Forms, links, digital signatures and text accessibility will be lost.",
+  "ui.pdfRasterAccepted": "I understand that the document will be converted to image pages.",
+  "ui.pdfExport": "Generate redacted PDF ↓",
+  "ui.pdfPrivacy": "Privacy: the original PDF stays in your browser; the output is a new document with black pixels applied to the images. Review the result before sharing. Scanned PDFs require manual redactions; automatic detection does not guarantee anonymization.",
+  "page.title": "SafePaste — Protect before you share",
+  "page.description": "Hide credentials and personal data before sharing. Local, best-effort processing without content uploads.",
+  "language.label": "Language",
+  "locale.name": "English (US)",
+  "theme.light": "Light",
+  "theme.dark": "Dark",
+  "theme.enableLight": "Enable light theme",
+  "theme.enableDark": "Enable dark theme",
+  "settings.all": "All enabled",
+  "settings.count": "{enabled} of {total} enabled",
+  "file.select": "Select a .txt, .json or .md file.",
+  "file.unsupported": "Unsupported format. Use .txt, .json or .md.",
+  "file.size": "Files must be no larger than 5 MB. Split larger files into smaller parts.",
+  "file.encoding": "This file is not UTF-8. Convert it to UTF-8 before importing.",
+  "file.binary": "This file appears to be binary, not plain text.",
+  "file.json": "The .json file contains invalid JSON. Fix its structure before importing.",
+  "file.read": "Could not read the file.",
+  "file.suffix": "protected",
+  "file.stem": "file",
+  "file.pdfName": "SafePaste-protected.pdf",
+  "error.unknown": "An unexpected error occurred. Try again.",
+  "text.copy": "Copy text ↗",
+  "text.copied": "Copied ✓",
+  "text.selectCopy": "Select and copy",
+  "text.clipboardHelp": "Your browser did not allow automatic copying. Press Ctrl+C (or ⌘C on Mac) with the text selected.",
+  "text.characters": {
+    "one": "{count} character",
+    "other": "{count} characters"
+  },
+  "text.incompleteCPF": "Incomplete CPF — keep typing",
+  "text.highlights": {
+    "one": "{count} highlighted segment",
+    "other": "{count} highlighted segments"
+  },
+  "text.noPatterns": "No patterns identified",
+  "text.waiting": "Waiting for text",
+  "text.disabled": "Detection disabled",
+  "text.reviewCPF": "Review: CPF is still incomplete",
+  "text.invalidJSON": "Invalid protected JSON — review",
+  "text.replacements": {
+    "one": "{count} replacement",
+    "other": "{count} replacements"
+  },
+  "text.noReplacements": "No replacements",
+  "text.jsonHelp": "A replacement made the JSON invalid. Copy and download are blocked. Review the content or disable the rule causing the problem.",
+  "text.disabledHelp": "All detection categories are disabled. Enable at least one category to allow copying.",
+  "text.cpfHelp": "Incomplete CPF: wait for all 11 digits before sanitizing. Copying will be available once the value is complete.",
+  "text.detected": {
+    "one": "Identified {count} segment: {categories}. Review the result before sharing.",
+    "other": "Identified {count} segments: {categories}. Review the result before sharing."
+  },
+  "text.noPatternsHelp": "No patterns recognized. This does not guarantee that the text is free of sensitive data.",
+  "text.noAnalysis": "No analysis yet.",
+  "kind.Credenciais": "Credentials",
+  "kind.Bearer tokens": "Bearer tokens",
+  "kind.Chaves privadas": "Private keys",
+  "kind.Credenciais em URL": "URL credentials",
+  "kind.Tokens conhecidos": "Known tokens",
+  "kind.JWTs": "JWTs",
+  "kind.E-mails": "Emails",
+  "kind.CPFs": "CPFs",
+  "kind.CPFs / números de 11 dígitos": "CPFs / 11-digit numbers",
+  "kind.CNPJs": "CNPJs",
+  "kind.Telefones": "Phone numbers",
+  "kind.Endereços": "Addresses",
+  "kind.CEPs": "Brazilian postal codes",
+  "kind.Endereços IP": "IP addresses",
+  "kind.UUIDs": "UUIDs",
+  "pdf.empty": "No PDF selected.",
+  "pdf.firstPage": "Page 1",
+  "pdf.stats": {
+    "one": "{count} page · automatic redactions: {automatic} · manual: {manual}",
+    "other": "{count} pages · automatic redactions: {automatic} · manual: {manual}"
+  },
+  "pdf.removedCount": " · removed: {count}",
+  "pdf.page": "Page {page} of {total}",
+  "pdf.noText": "This page has no extractable text. Check images and scans and cover sensitive data manually.",
+  "pdf.automatic": {
+    "one": "{count} automatic redaction on this page. Check that it covers all the content.",
+    "other": "{count} automatic redactions on this page. Check that they cover all the content."
+  },
+  "pdf.discarded": "Automatic suggestions on this page were removed. The corresponding content will be visible in the export.",
+  "pdf.noPatterns": "No patterns found on this page. Check names, images and other data that may have been missed.",
+  "pdf.removedWarning": {
+    "one": " You removed {count} automatic suggestion. Check whether the corresponding data can remain visible.",
+    "other": " You removed {count} automatic suggestions. Check whether the corresponding data can remain visible."
+  },
+  "pdf.unviewed": {
+    "one": " You still need to view {count} page before exporting.",
+    "other": " You still need to view {count} pages before exporting."
+  },
+  "pdf.readerError": "Could not load the PDF reader. Connect to the internet and try again.",
+  "pdf.size": "The PDF must be no larger than 25 MB.",
+  "pdf.select": "Select a PDF file.",
+  "pdf.preparing": "Preparing the PDF reader...",
+  "pdf.reading": "Reading the document and looking for patterns...",
+  "pdf.pageLimit": "Experimental limit: up to 30 pages per PDF.",
+  "pdf.analyzing": "Analyzing page {page} of {total}...",
+  "pdf.pageSize": "The PDF has pages that are too large for this version.",
+  "pdf.ready": "Preview ready. Review every page before generating the file.",
+  "pdf.openError": "Could not open the PDF: {reason}",
+  "pdf.previousOpen": " The previous file is still open.",
+  "pdf.invalid": "The PDF file is invalid or corrupt.",
+  "pdf.password": "This PDF requires a password. Password-protected PDFs are not supported.",
+  "pdf.removeAuto": "Remove automatic suggestion",
+  "pdf.removeManual": "Remove manual redaction",
+  "pdf.removeLabel": "{action} from page {page}",
+  "pdf.confirm": "The generated PDF will have image pages. Text will no longer be selectable or searchable. Have you checked all redactions?",
+  "pdf.generating": "Generating image for page {page} of {total}...",
+  "pdf.generated": "File generated. Open the downloaded PDF and review all redactions before sharing.",
+  "pdf.exportError": "Could not generate the PDF: {reason}",
+  "pdf.noPages": "No pages to export.",
+  "pdf.invalidPage": "Page {page} is invalid for export.",
+  "pdf.jpeg": "JPEG image unavailable."
+};
+
+const ptBR = {
+  "ui.home": "SafePaste, início",
+  "ui.local": "Tudo acontece no seu navegador",
+  "ui.eyebrow": "FERRAMENTA LOCAL",
+  "ui.headingFirst": "Proteja antes",
+  "ui.headingSecond": "de compartilhar",
+  "ui.intro": "Oculte tokens, credenciais e dados pessoais antes de enviar logs, configurações ou trechos de código para uma IA.",
+  "ui.fileType": "Tipo de arquivo",
+  "ui.textTab": "Texto e código",
+  "ui.pdfTab": "· experimental",
+  "ui.editorLabel": "Editor de sanitização",
+  "ui.editor": "Editor",
+  "ui.editorSubtitle": "/ sanitização de texto",
+  "ui.importLabel": "Importar arquivo TXT, JSON ou Markdown",
+  "ui.import": "Importar arquivo",
+  "ui.example": "Usar exemplo",
+  "ui.clear": "Limpar tudo",
+  "ui.localFile": "Arquivo local",
+  "ui.editable": "Editável · nenhuma transferência",
+  "ui.original": "Texto original",
+  "ui.highlightHint": "Os dados detectados são destacados",
+  "ui.inputPlaceholder": "Cole seu texto aqui…",
+  "ui.protected": "Texto protegido",
+  "ui.outputHint": "Pronto para revisar e copiar",
+  "ui.outputPlaceholder": "O texto protegido aparecerá aqui…",
+  "ui.download": "Baixar protegido ↓",
+  "ui.settings": "O que detectar",
+  "ui.settingsIntro": "Escolha os tipos de informação que deseja proteger.",
+  "ui.enableAll": "Ativar todas",
+  "ui.credentials": "Credenciais e acessos",
+  "ui.personal": "Dados pessoais",
+  "ui.infrastructure": "Infraestrutura e IDs",
+  "ui.assignments": "Segredos em variáveis",
+  "ui.assignmentsHint": "API_TOKEN, senha, DATABASE_URL",
+  "ui.tokens": "Tokens conhecidos",
+  "ui.tokensHint": "Chaves com prefixos reconhecidos",
+  "ui.bearer": "Autorização Bearer",
+  "ui.bearerHint": "Cabeçalhos de autenticação",
+  "ui.jwt": "Tokens JWT",
+  "ui.jwtHint": "Tokens com três partes",
+  "ui.privateKeys": "Chaves privadas",
+  "ui.privateKeysHint": "Blocos PEM de chave privada",
+  "ui.urlCredentials": "Senhas em URLs",
+  "ui.urlCredentialsHint": "Usuário e senha em conexões",
+  "ui.cpf": "CPF",
+  "ui.cpfHint": "Com e sem pontuação",
+  "ui.cnpj": "CNPJ",
+  "ui.cnpjHint": "Com e sem pontuação reconhecível",
+  "ui.emails": "E-mails",
+  "ui.emailsHint": "Endereços de correio eletrônico",
+  "ui.phones": "Telefones",
+  "ui.phonesHint": "Celulares, fixos, +55 e 0800",
+  "ui.addresses": "Endereços e CEPs",
+  "ui.addressesHint": "Rua, avenida, número, complemento e CEP",
+  "ui.ip": "Endereços IP",
+  "ui.ipHint": "IPv4",
+  "ui.uuid": "UUIDs",
+  "ui.uuidHint": "Identificadores padronizados",
+  "ui.settingsNote": "Alguns padrões podem se sobrepor. Desativar uma categoria reduz a proteção; revise sempre o texto antes de copiar.",
+  "ui.results": "Sobre os resultados",
+  "ui.important": "Importante",
+  "ui.disclaimer": "A identificação usa padrões e pode deixar passar informações sensíveis, especialmente nomes, endereços sem número, dados em imagens e segredos sem formato reconhecível. Revise o texto protegido antes de compartilhar. Nenhum texto é enviado, salvo ou analisado por serviços externos.",
+  "ui.pdfEditor": "Sanitização de PDF",
+  "ui.pdfSubtitle": "/ prévia e tarjas",
+  "ui.pdfExperimental": "Experimental · processamento no navegador",
+  "ui.pdfSelect": "Selecione um PDF",
+  "ui.pdfIntro": "Detectamos padrões no texto extraível e sugerimos tarjas sobre as páginas. Você pode acrescentar tarjas manualmente antes de exportar.",
+  "ui.pdfFile": "Escolher arquivo PDF",
+  "ui.pdfPick": "Escolher PDF",
+  "ui.pdfLimits": "Até 25 MB e 30 páginas. A biblioteca PDF.js é carregada pela internet; o arquivo escolhido não é enviado a um servidor. Não há OCR para PDFs digitalizados. Telefones, endereços e CEPs são buscados no texto extraível, sujeitos à revisão.",
+  "ui.pdfRestart": "Trocar arquivo",
+  "ui.pdfPrev": "← Anterior",
+  "ui.pdfNext": "Próxima →",
+  "ui.pdfCanvas": "Prévia da página",
+  "ui.pdfOverlay": "Arraste para desenhar uma tarja manual",
+  "ui.pdfRemoveLayer": "Botões para remover tarjas",
+  "ui.pdfCaptionBefore": "Arraste sobre a página para desenhar uma tarja. Clique no",
+  "ui.pdfCaptionAfter": "de qualquer retângulo para removê-lo (inclusive os automáticos). Confira cada página.",
+  "ui.pdfReview": "Revise as informações",
+  "ui.pdfCoverage": "As tarjas automáticas podem cobrir uma linha inteira para evitar deixar um segredo parcialmente visível. A ferramenta não reconhece imagens, rostos ou todos os dados pessoais.",
+  "ui.pdfUndo": "Desfazer última",
+  "ui.pdfClear": "Limpar manuais",
+  "ui.pdfRestore": "Restaurar automáticas",
+  "ui.pdfReviewed": "Revisei todas as páginas e conferi se dados sensíveis ficaram descobertos.",
+  "ui.pdfRasterTitle": "Aviso: o PDF será convertido em imagens",
+  "ui.pdfRasterInfo": "O novo PDF manterá a aparência e a ordem das páginas, mas o texto não poderá mais ser selecionado nem pesquisado. Formulários, links, assinaturas digitais e acessibilidade textual serão perdidos.",
+  "ui.pdfRasterAccepted": "Entendi que o documento será convertido em páginas de imagem.",
+  "ui.pdfExport": "Gerar PDF com tarjas ↓",
+  "ui.pdfPrivacy": "Privacidade: o PDF original permanece no navegador; a saída é um documento novo, com pixels pretos aplicados às imagens. Revise o resultado antes de compartilhar. PDF escaneado exige tarjas manuais; detecção automática não é garantia de anonimização.",
+  "page.title": "SafePaste — Proteja antes de compartilhar",
+  "page.description": "Oculte credenciais e dados pessoais antes de compartilhar. Local, best-effort e sem envio de conteúdo.",
+  "language.label": "Idioma",
+  "locale.name": "Português brasileiro",
+  "theme.light": "Claro",
+  "theme.dark": "Escuro",
+  "theme.enableLight": "Ativar tema claro",
+  "theme.enableDark": "Ativar tema escuro",
+  "settings.all": "Todas ativas",
+  "settings.count": "{enabled} de {total} ativas",
+  "file.select": "Selecione um arquivo .txt, .json ou .md.",
+  "file.unsupported": "Formato não suportado. Use .txt, .json ou .md.",
+  "file.size": "O arquivo deve ter até 5 MB. Para arquivos maiores, divida o conteúdo em partes.",
+  "file.encoding": "O arquivo não está em UTF-8. Converta-o para UTF-8 antes de importar.",
+  "file.binary": "Este arquivo parece ser binário, não texto simples.",
+  "file.json": "O arquivo .json não contém JSON válido. Corrija a estrutura antes de importar.",
+  "file.read": "Não foi possível ler o arquivo.",
+  "file.suffix": "protegido",
+  "file.stem": "arquivo",
+  "file.pdfName": "SafePaste-protegido.pdf",
+  "error.unknown": "Ocorreu um erro inesperado. Tente novamente.",
+  "text.copy": "Copiar texto ↗",
+  "text.copied": "Copiado ✓",
+  "text.selectCopy": "Selecione e copie",
+  "text.clipboardHelp": "O navegador não permitiu a cópia automática. Use Ctrl+C (ou ⌘C no Mac) com o texto selecionado.",
+  "text.characters": {
+    "one": "{count} caractere",
+    "other": "{count} caracteres"
+  },
+  "text.incompleteCPF": "CPF incompleto — continue digitando",
+  "text.highlights": {
+    "one": "{count} trecho destacado",
+    "other": "{count} trechos destacados"
+  },
+  "text.noPatterns": "Nenhum padrão identificado",
+  "text.waiting": "Aguardando texto",
+  "text.disabled": "Detecção desativada",
+  "text.reviewCPF": "Revise: CPF ainda não está completo",
+  "text.invalidJSON": "JSON protegido inválido — revise",
+  "text.replacements": {
+    "one": "{count} substituição",
+    "other": "{count} substituições"
+  },
+  "text.noReplacements": "Nenhuma substituição",
+  "text.jsonHelp": "A substituição tornou o JSON inválido. A cópia e o download ficam bloqueados. Revise o conteúdo ou desative a regra problemática.",
+  "text.disabledHelp": "Todas as detecções foram desativadas. Ative pelo menos uma categoria para habilitar a cópia.",
+  "text.cpfHelp": "CPF incompleto: aguarde os 11 dígitos para sanitizar. A cópia ficará disponível após concluir o valor.",
+  "text.detected": {
+    "one": "Foi identificado {count} trecho: {categories}. Revise o resultado antes de compartilhar.",
+    "other": "Foram identificados {count} trechos: {categories}. Revise o resultado antes de compartilhar."
+  },
+  "text.noPatternsHelp": "Nenhum padrão reconhecido. Isso não garante que o texto esteja livre de dados sensíveis.",
+  "text.noAnalysis": "Nenhuma análise realizada.",
+  "kind.Credenciais": "Credenciais",
+  "kind.Bearer tokens": "Bearer tokens",
+  "kind.Chaves privadas": "Chaves privadas",
+  "kind.Credenciais em URL": "Credenciais em URL",
+  "kind.Tokens conhecidos": "Tokens conhecidos",
+  "kind.JWTs": "JWTs",
+  "kind.E-mails": "E-mails",
+  "kind.CPFs": "CPFs",
+  "kind.CPFs / números de 11 dígitos": "CPFs / números de 11 dígitos",
+  "kind.CNPJs": "CNPJs",
+  "kind.Telefones": "Telefones",
+  "kind.Endereços": "Endereços",
+  "kind.CEPs": "CEPs",
+  "kind.Endereços IP": "Endereços IP",
+  "kind.UUIDs": "UUIDs",
+  "pdf.empty": "Nenhum PDF selecionado.",
+  "pdf.firstPage": "Página 1",
+  "pdf.stats": {
+    "one": "{count} página · {automatic} tarja(s) automáticas · {manual} manuais",
+    "other": "{count} páginas · {automatic} tarja(s) automáticas · {manual} manuais"
+  },
+  "pdf.removedCount": " · {count} removida(s)",
+  "pdf.page": "Página {page} de {total}",
+  "pdf.noText": "Esta página não tem texto extraível. É necessário verificar imagens, digitalizações e cobrir os dados manualmente.",
+  "pdf.automatic": {
+    "one": "{count} tarja automática nesta página. Confira se cobre todo o conteúdo.",
+    "other": "{count} tarjas automáticas nesta página. Confira se cobrem todo o conteúdo."
+  },
+  "pdf.discarded": "As sugestões automáticas desta página foram removidas. O conteúdo correspondente ficará visível na exportação.",
+  "pdf.noPatterns": "Nenhum padrão encontrado nesta página. Confira nomes, imagens e outros dados que podem ter escapado.",
+  "pdf.removedWarning": {
+    "one": " Você retirou {count} sugestão automática. Confira se os dados correspondentes podem ficar visíveis.",
+    "other": " Você retirou {count} sugestões automáticas. Confira se os dados correspondentes podem ficar visíveis."
+  },
+  "pdf.unviewed": {
+    "one": " Ainda falta visualizar {count} página antes de exportar.",
+    "other": " Ainda falta visualizar {count} páginas antes de exportar."
+  },
+  "pdf.readerError": "Não foi possível carregar o leitor PDF. Conecte-se à internet e tente novamente.",
+  "pdf.size": "O PDF deve ter até 25 MB.",
+  "pdf.select": "Selecione um arquivo PDF.",
+  "pdf.preparing": "Preparando o leitor PDF...",
+  "pdf.reading": "Lendo documento e procurando padrões...",
+  "pdf.pageLimit": "Limite experimental: até 30 páginas por PDF.",
+  "pdf.analyzing": "Analisando página {page} de {total}...",
+  "pdf.pageSize": "O PDF tem páginas grandes demais para esta versão.",
+  "pdf.ready": "Prévia pronta. Revise cada página antes de gerar o arquivo.",
+  "pdf.openError": "Não foi possível abrir o PDF: {reason}",
+  "pdf.previousOpen": " O arquivo anterior continua aberto.",
+  "pdf.invalid": "O arquivo PDF é inválido ou está corrompido.",
+  "pdf.password": "Este PDF exige uma senha. PDFs protegidos por senha não são suportados.",
+  "pdf.removeAuto": "Remover sugestão automática",
+  "pdf.removeManual": "Remover tarja manual",
+  "pdf.removeLabel": "{action} da página {page}",
+  "pdf.confirm": "O PDF gerado terá páginas transformadas em imagens. O texto não poderá mais ser selecionado ou pesquisado. Verificou todas as tarjas?",
+  "pdf.generating": "Gerando imagem da página {page} de {total}...",
+  "pdf.generated": "Arquivo gerado. Abra o PDF baixado e revise todas as tarjas antes de compartilhar.",
+  "pdf.exportError": "Falha ao gerar PDF: {reason}",
+  "pdf.noPages": "Nenhuma página para exportar.",
+  "pdf.invalidPage": "Página {page} inválida para exportação.",
+  "pdf.jpeg": "Imagem JPEG indisponível."
+};
+
+
+const SUPPORTED_LOCALES = Object.freeze(['pt-BR', 'en-US']);
+const LANGUAGE_STORAGE_KEY = 'safepaste-language';
+const catalogs = Object.freeze({ 'en-US': enUS, 'pt-BR': ptBR });
+
+/** Errors carry translation keys, so an already visible error can change language. */
+class LocalizedError extends Error {
+  constructor(code, values = {}) {
+    super(code);
+    this.name = 'LocalizedError';
+    this.code = code;
+    this.values = values;
+  }
+}
+
+function detectLocale(languages = []) {
+  for (const language of languages) {
+    if (/^pt(?:-|$)/i.test(language)) return 'pt-BR';
+    if (/^en(?:-|$)/i.test(language)) return 'en-US';
+  }
+  return 'en-US';
+}
+
+/** Storage access is optional: file:// and private browsing can restrict it. */
+function createI18n({ storage, languages = [] } = {}) {
+  let saved;
+  try { saved = storage?.getItem(LANGUAGE_STORAGE_KEY); } catch { /* Use browser language. */ }
+  let locale = SUPPORTED_LOCALES.includes(saved) ? saved : detectLocale(languages);
+  const listeners = new Set();
+  return {
+    get locale() { return locale; },
+    t(key, values = {}) {
+      let message = catalogs[locale][key] ?? enUS[key];
+      if (message === undefined) throw new Error(`Unknown translation key: ${key}`);
+      if (typeof message === 'object') {
+        // Use the plural for empty counts (for example, '0 caracteres').
+        const form = Number(values.count) === 0 ? 'other' : new Intl.PluralRules(locale).select(values.count);
+        message = message[form] ?? message.other;
+      }
+      return message.replace(/\{(\w+)\}/g, (_, name) => String(values[name] ?? `{${name}}`));
+    },
+    setLocale(next) {
+      if (!SUPPORTED_LOCALES.includes(next)) return false;
+      // Persist even when the user explicitly selects the detected language.
+      try { storage?.setItem(LANGUAGE_STORAGE_KEY, next); } catch { /* Keep working in memory. */ }
+      if (next !== locale) {
+        locale = next;
+        for (const listener of listeners) listener();
+      }
+      return true;
+    },
+    subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
+  };
+}
+
+/** Only application-owned text/attributes are translated. Never translate imported content. */
+function translatePage(i18n, document) {
+  document.documentElement.lang = i18n.locale;
+  document.title = i18n.t('page.title');
+  document.querySelector('meta[name="description"]')?.setAttribute('content', i18n.t('page.description'));
+  for (const element of document.querySelectorAll('[data-i18n]')) {
+    element.textContent = i18n.t(element.dataset.i18n);
+  }
+  for (const attribute of ['aria-label', 'placeholder', 'title']) {
+    for (const element of document.querySelectorAll(`[data-i18n-${attribute}]`)) {
+      element.setAttribute(attribute, i18n.t(element.getAttribute(`data-i18n-${attribute}`)));
+    }
+  }
+  for (const button of document.querySelectorAll('[data-locale]')) {
+    button.setAttribute('aria-pressed', String(button.dataset.locale === i18n.locale));
+  }
+}
+
+function translatedError(error, i18n) {
+  if (error instanceof LocalizedError) return i18n.t(error.code, error.values);
+  if (error?.name === 'PasswordException') return i18n.t('pdf.password');
+  if (error?.name === 'InvalidPDFException') return i18n.t('pdf.invalid');
+  // Third-party messages may contain source content; expose only our own safe messages.
+  return i18n.t('error.unknown');
+}
+
+/** Local, rule-based, best-effort redaction. Always review before sharing. */
+const SECRET_KEY = /(?:api[_-]?(?:key|token)|(?:key|token)[_-]?api|access[_-]?token|refresh[_-]?token|auth(?:orization)?[_-]?token|id[_-]?token|bearer[_-]?token|token|secret|password|passwd|pwd|credential|private[_-]?key|service[_-]?role[_-]?key|client[_-]?secret|connection[_-]?(?:string|url)|(?:database|db|redis|mongo|postgres|mysql)[_-]?(?:url|uri|password|pass|token|secret)|authorization|auth[_-]?header)/i;
+const KEY_SAFE = /^[\w.-]+$/;
+const isSensitiveKey = key => {
+  const normalized = key.replace(/[-_.]/g, '').toLowerCase();
+  if (/^(?:token|secret|password|passwd|pwd|authorization|apikey|apitoken|tokenapi|keyapi|accesskey|accesstoken|refreshtoken|authtoken|idtoken|clientsecret|privatekey|databas(eurl|epassword)|db(url|password|pass)|connectionstring|connectionurl)$/.test(normalized)) return true;
+  if (/(?:apikey|apitoken|tokenapi|access_token|refreshtoken|clientsecret|privatekey|password|passwd|credential|secret|connectionstring|databaseurl|dburl|service_role_key)/i.test(normalized)) return true;
+  return SECRET_KEY.test(key) && !/(?:count|length|size|limit|timeout|enabled|expires|type|name|label|prefix|placeholder|example)$/i.test(key);
+};
+const checkCPF = digits => {
+  if (!/^\d{11}$/.test(digits) || /^(\d)\1{10}$/.test(digits)) return false;
+  for (let n=9;n<=10;n++) {
+    const sum = Array.from(digits.slice(0,n), Number).reduce((a,d,i)=>a+d*(n+1-i),0);
+    if ((sum*10)%11%10 !== Number(digits[n])) return false;
+  }
+  return true;
+};
+const checkCNPJ = digits => {
+  if (!/^\d{14}$/.test(digits) || /^(\d)\1{13}$/.test(digits)) return false;
+  const weights = [[5,4,3,2,9,8,7,6,5,4,3,2],[6,5,4,3,2,9,8,7,6,5,4,3,2]];
+  return [12,13].every((n,index)=>{const sum = weights[index].reduce((a,w,i)=>a+w*Number(digits[i]),0);return Number(digits[n]) === (sum%11 < 2 ? 0 : 11-sum%11);});
+};
+const DEFAULT_DETECTIONS = Object.freeze({
+  assignments: true,
+  tokens: true,
+  bearer: true,
+  jwt: true,
+  privateKeys: true,
+  urlCredentials: true,
+  cpf: true,
+  cnpj: true,
+  emails: true,
+  phones: true,
+  addresses: true,
+  ip: true,
+  uuid: true,
+});
+
+function sanitize(source, options = {}) {
+  const input = String(source ?? '');
+  const settings = { ...DEFAULT_DETECTIONS, ...options };
+  // Compatibility with broad options from earlier versions.
+  if (Object.hasOwn(options, 'personal')) {
+    for (const id of ['cpf','cnpj','emails','phones','addresses']) if (!Object.hasOwn(options,id)) settings[id] = options.personal;
+  }
+  if (Object.hasOwn(options, 'network') && !Object.hasOwn(options,'ip')) settings.ip = options.network;
+  if (Object.hasOwn(options, 'ids') && !Object.hasOwn(options,'uuid')) settings.uuid = options.ids;
+  const candidates=[];
+  const addHit = (start,end,kind,replacement,priority) => {
+    if (start < 0 || end <= start || input.slice(start,end) === replacement) return;
+    candidates.push({start,end,kind,original:input.slice(start,end),replacement,priority});
+  };
+  const add=(regex,kind,replacement,priority=0,predicate=()=>true)=>{
+    for(const m of input.matchAll(regex)) if(predicate(m)) addHit(m.index,m.index+m[0].length,kind,typeof replacement==='function'?replacement(m):replacement,priority);
+  };
+
+  // JSON, .env, YAML, logs and JS/Python assignments. Replace the VALUE only.
+  // Deliberately limit to one line to avoid deleting unrelated code.
+  const assignment = /(?:^|[\s,{;])[^\S\r\n]*(?:(?:export|const|let|var)\s+)?(["']?)([A-Za-z][\w.-]{0,100})\1\s*[:=]\s*("(?:\\.|[^"\r\n])*"|'(?:\\.|[^'\r\n])*'|`[^`\r\n]*`|[^\s,;}#\r\n]+)(?=[\s,;}#]|$)/gm;
+  if (settings.assignments) for(let m; (m = assignment.exec(input)) !== null;) {
+    // Keep looking after a non-sensitive field. Otherwise "Erro: apitoken=X"
+    // would consume the entire line as one benign assignment and leak X.
+    if(!KEY_SAFE.test(m[2]) || !isSensitiveKey(m[2])) {
+      assignment.lastIndex = m.index + 1;
+      continue;
+    }
+    if (/^authorization$/i.test(m[2]) && /^Bearer$/i.test(m[3])) continue; // handled by complete Bearer rule
+    const raw=m[3], offset=m[0].lastIndexOf(raw), start=m.index+offset;
+    const quoted=/^["'`]/.test(raw) && raw.length>=2 && raw[0]===raw.at(-1);
+    const inner=quoted?raw.slice(1,-1):raw;
+    if (!inner || /^(?:null|undefined|none|true|false)$/i.test(inner)) continue;
+    const replacement = /(?:url|uri|connection)/i.test(m[2]) ? 'postgresql://usuario:senha@db.exemplo.invalid:5432/banco_teste' : /authorization|authheader/i.test(m[2]) ? 'Bearer TOKEN_FICTICIO' : 'VALOR_FICTICIO';
+    addHit(start+(quoted?1:0),start+raw.length-(quoted?1:0),'Credenciais',replacement,110);
+  }
+  // Authorization headers even when nested or written with a different syntax.
+  if(settings.bearer) add(/\bBearer\s+[^\s"'`,;}{]{6,}/gi,'Bearer tokens','Bearer TOKEN_FICTICIO',90);
+  if(settings.privateKeys) add(/-----BEGIN ([A-Z0-9 ]*PRIVATE KEY)-----[\s\S]*?-----END \1-----/g,'Chaves privadas','-----BEGIN PRIVATE KEY-----\nCHAVE_FICTICIA_NAO_VALIDA\n-----END PRIVATE KEY-----',100);
+  if(settings.urlCredentials) add(/\b((?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis|amqps?|https?|ftp):\/\/)([^\s/@:'"<>]+)(?::([^\s/@'"<>]*))?@/gi,'Credenciais em URL',m=>m[1]+'usuario_ficticio'+(m[3]!==undefined?':senha_ficticia':'')+'@',85);
+  if(settings.tokens) add(/\b(?:sk-(?:proj-)?[A-Za-z0-9_-]{12,}|gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{12,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{25,})\b/g,'Tokens conhecidos','TOKEN_FICTICIO',80);
+  if(settings.jwt) add(/\beyJ[A-Za-z0-9_-]{5,}\.eyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]+\b/g,'JWTs','JWT.FICTICIO.NAO_VALIDO',85);
+  {
+    if(settings.emails) add(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,'E-mails','usuario@exemplo.invalid',30);
+    // Formatted CPF/CNPJ, plus unformatted 11-digit sequences (privacy-first: possible false positives).
+    // Complete formatted CPFs only; do not redact partial values while typing.
+    // Keep the CPF above phone matches in the overlap-resolution order.
+    if(settings.cpf) add(/(?<![\d])\d{3}\.\d{3}\.\d{3}-\d{2}(?!\d)/g,'CPFs','000.000.000-00',65);
+    if(settings.cpf) add(/(?<![\d])\d{3}[ ]\d{3}[ ]\d{3}[ -]\d{2}(?!\d)/g,'CPFs','000.000.000-00',65);
+    if(settings.cnpj) add(/(?<!\d)\d{2}[. ]\d{3}[. ]\d{3}[\/ ]\d{4}[- ]\d{2}(?!\d)/g,'CNPJs','00.000.000/0000-00',40);
+    if(settings.cpf) for(const m of input.matchAll(/(?<!\d)\d{11}(?!\d)/g)) {
+      const before=input.slice(Math.max(0,m.index-45),m.index);
+      // When a value is explicitly labeled as telephone, don't classify it as CPF.
+      if (/(?:\b(?:telefone|tel\.?|celular|cel\.?|whatsapp|whats|fone|phone|mobile|contato)\s*[:=#-]\s*)$/i.test(before)) continue;
+      addHit(m.index,m.index+11,'CPFs / números de 11 dígitos','00000000000',60);
+    }
+    if(settings.cnpj) for(const m of input.matchAll(/(?<!\d)\d{14}(?!\d)/g)) {
+      const before=input.slice(Math.max(0,m.index-32),m.index);
+      if (checkCNPJ(m[0]) || /\bcnpj\s*[:=#-]?\s*$/i.test(before)) addHit(m.index,m.index+14,'CNPJs','00000000000000',38);
+    }
+    // Brazil: mobile (with/without DDD), landline, +55 and 0800.
+    // Bare 10-digit sequences with the subscriber number starting with 9 are
+    // ignored to avoid masking a mobile while only 10 of its 11 digits were typed.
+    const phoneLabel=before=>/(?:\b(?:telefone|tel\.?|celular|cel\.?|whatsapp|whats|fone|phone|mobile|contato)\s*[:=#-]\s*)$/i.test(before);
+    const cpfLabel=before=>/\bcpf\s*[:=#-]?\s*$/i.test(before);
+    if(settings.phones) {
+      for(const m of input.matchAll(/(?<!\d)(?:\+55[\s.-]?)?(?:\(\d{2}\)|\d{2})[\s.-]?(?:9\d{4}|[2-8]\d{3})[\s.-]?\d{4}(?!\d)/g)) {
+        const before=input.slice(Math.max(0,m.index-45),m.index);
+        if(cpfLabel(before)) continue;
+        const digits=m[0].replace(/\D/g,'');
+        const hasFormat=/[()+.\s-]/.test(m[0]);
+        if(digits.length===10 && !hasFormat && !phoneLabel(before)) continue;
+        addHit(m.index,m.index+m[0].length,'Telefones',digits.length>=13?' +55 (00) 90000-0000'.trim():digits.length>=11?'(00) 90000-0000':'(00) 0000-0000',(!hasFormat && !phoneLabel(before))?20:75);
+      }
+      // Local mobile/landline numbers need a telephone label or a hyphen.
+      for(const m of input.matchAll(/(?<!\d)(?:9\d{4}|[2-8]\d{3})[\s.-]?\d{4}(?!\d)/g)) {
+        const before=input.slice(Math.max(0,m.index-45),m.index);
+        if(cpfLabel(before) || (!phoneLabel(before) && !/[-.\s]/.test(m[0]))) continue;
+        addHit(m.index,m.index+m[0].length,'Telefones','90000-0000',50);
+      }
+      add(/(?<!\d)0800[\s.-]?\d{3}[\s.-]?\d{4}(?!\d)/g,'Telefones','0800 000 0000',55);
+    }
+  }
+  if(settings.addresses) {
+    // Explicit field: preserve the label and mask the complete value, including
+    // city/neighborhood/complement when on the same line.
+    const labeled=/(?<![\p{L}\d])(?:endere[cç]o(?:\s+(?:residencial|comercial|de\s+entrega))?|logradouro|address)["']?\s*[:=]\s*(?:"([^"\r\n]{5,200})"|'([^'\r\n]{5,200})'|([^\r\n;|<>"']{5,200}))/giu;
+    for(const m of input.matchAll(labeled)) {
+      const value=m[1]??m[2]??m[3];
+      if (/^(?:n[ãa]o\s+informado|n\/?a|nenhum|sem\s+endere[cç]o|null|undefined|\-+)\s*$/i.test(value.trim())) continue;
+      const start=m.index+m[0].lastIndexOf(value);
+      const end=start+value.trimEnd().length;
+      addHit(start,end,'Endereços','Rua Exemplo, 000 - Bairro Exemplo, Cidade/UF',70);
+    }
+    // Unlabeled street addresses only when a house number (or s/n) is present.
+    // Prevents masking innocent references like "Avenida Brasil" alone.
+    const street=/(?<![\p{L}\p{N}])(?:Rua|R\.|Avenida|Av\.|Travessa|Tv\.|Alameda|Estrada|Rodovia|Pra[cç]a|Servid[ãa]o|Largo|Beco|Passagem)\s+/giu;
+    for(const m of input.matchAll(street)) {
+      const rest=input.slice(m.index).split(/[\r\n;|<>"']/)[0].slice(0,170);
+      const house=rest.match(/^[^\r\n;|<>"']{3,90}?(?:,\s*|\s+)(?:n[º°o.]?\s*)?(?:\d{1,6}\b|s\/?n\b)/i);
+      if (!house) continue;
+      let end=rest.length;
+      const sentence=rest.slice(house[0].length).search(/\.\s+(?=[A-ZÁÀÂÃÉÊÍÓÔÕÚÇ])/u);
+      if (sentence!==-1) end=Math.min(end,house[0].length+sentence);
+      const value=rest.slice(0,end).trimEnd().replace(/[.,]+$/,'');
+      addHit(m.index,m.index+value.length,'Endereços','Rua Exemplo, 000 - Bairro Exemplo, Cidade/UF',68);
+    }
+    // A standalone formatted CEP, or an unformatted CEP with an explicit label.
+    add(/(?<!\d)\d{5}-\d{3}(?!\d)/g,'CEPs','00000-000',35);
+    for(const m of input.matchAll(/\bCEP\s*[:=#-]?\s*(\d{8})(?!\d)/gi)) {
+      const value=m[1], start=m.index+m[0].lastIndexOf(value);
+      addHit(start,start+value.length,'CEPs','00000000',35);
+    }
+  }
+  if(settings.ip) add(/\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g,'Endereços IP','192.0.2.1',15);
+  if(settings.uuid) add(/\b[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/gi,'UUIDs','00000000-0000-4000-8000-000000000000',10);
+
+  candidates.sort((a,b)=>b.priority-a.priority || (b.end-b.start)-(a.end-a.start) || a.start-b.start);
+  const accepted=[];
+  for(const c of candidates) if(!accepted.some(h=>c.start<h.end && c.end>h.start)) accepted.push(c);
+  accepted.sort((a,b)=>a.start-b.start);
+  let text='',pos=0;
+  for(const h of accepted){text+=input.slice(pos,h.start)+h.replacement;pos=h.end;}
+  text+=input.slice(pos);
+  return {text,hits:accepted};
+}
+
+/** Text files are read on-device. These helpers never make network requests. */
+const MAX_TEXT_FILE_BYTES = 5 * 1024 * 1024;
+const TEXT_FILE_EXTENSIONS = Object.freeze(['txt', 'json', 'md']);
+
+function inspectTextFile(file) {
+  if (!file || typeof file.name !== 'string') throw new LocalizedError('file.select');
+  const ext = file.name.match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
+  if (!TEXT_FILE_EXTENSIONS.includes(ext)) throw new LocalizedError('file.unsupported');
+  if (!Number.isFinite(file.size) || file.size < 0 || file.size > MAX_TEXT_FILE_BYTES) {
+    throw new LocalizedError('file.size');
+  }
+  return ext;
+}
+
+function decodeTextBuffer(buffer) {
+  let decoded;
+  try { decoded = new TextDecoder('utf-8', { fatal: true }).decode(buffer); }
+  catch { throw new LocalizedError('file.encoding'); }
+  const result = decoded.replace(/^\uFEFF/, '');
+  if (result.includes('\u0000') || /[\u0001-\u0008\u000B\u000C\u000E-\u001F]/.test(result)) {
+    throw new LocalizedError('file.binary');
+  }
+  return result;
+}
+
+function validateJsonFile(text) {
+  try { JSON.parse(text); }
+  catch { throw new LocalizedError('file.json'); }
+}
+
+function sanitizedJsonIsValid(text) {
+  try { JSON.parse(text); return true; } catch { return false; }
+}
+
+function protectedTextFilename(originalName, { suffix = 'protegido', fallbackStem = 'arquivo' } = {}) {
+  if (!originalName) return `safepaste-${suffix}.txt`;
+  const basename = originalName.split(/[/\\]/).at(-1)
+    .replace(/[\u0000-\u001f<>:"|?*]/g, '_').trim();
+  const extension = basename.match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
+  if (!TEXT_FILE_EXTENSIONS.includes(extension)) return `safepaste-${suffix}.txt`;
+  const stem = basename.slice(0, -extension.length - 1).replace(/[.\s]+$/,'').slice(0, 100);
+  return `${stem || fallbackStem}-${suffix}.${extension}`;
+}
+
+const $ = id => document.getElementById(id);
+let preferenceStorage;
+try { preferenceStorage = localStorage; } catch { /* Preferences remain in memory. */ }
+const i18n = createI18n({ storage: preferenceStorage, languages: navigator.languages || [navigator.language] });
+const t = (key, values) => i18n.t(key, values);
+for (const button of document.querySelectorAll('[data-locale]')) {
+  button.addEventListener('click', () => i18n.setLocale(button.dataset.locale));
+}
+translatePage(i18n, document);
+const themeButton = $('theme-toggle');
+const themeIcon = $('theme-icon');
+const themeLabel = $('theme-label');
+const themeStorageKey = 'safepaste-theme';
+function readSavedTheme() {
+  try { return localStorage.getItem(themeStorageKey); } catch { return null; }
+}
+function applyTheme(theme) {
+  const dark = theme === 'dark';
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  themeIcon.textContent = dark ? '☀' : '☾';
+  themeLabel.textContent = t(dark ? 'theme.light' : 'theme.dark');
+  themeButton.setAttribute('aria-label', t(dark ? 'theme.enableLight' : 'theme.enableDark'));
+  themeButton.title = t(dark ? 'theme.enableLight' : 'theme.enableDark');
+}
+const systemTheme = window.matchMedia?.('(prefers-color-scheme: dark)');
+const savedTheme = readSavedTheme();
+applyTheme(savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : (systemTheme?.matches ? 'dark' : 'light'));
+if (savedTheme !== 'dark' && savedTheme !== 'light') {
+  systemTheme?.addEventListener?.('change', event => applyTheme(event.matches ? 'dark' : 'light'));
+}
+themeButton.addEventListener('click', () => {
+  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  try { localStorage.setItem(themeStorageKey, next); } catch { /* Storage unavailable: the theme still works for this page. */ }
+});
+const input = $('input');
+const output = $('output');
+const escapeHTML = value => value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const detectors = [...document.querySelectorAll('[data-detector]')];
+const detectorOptions = () => Object.fromEntries(detectors.map(input => [input.dataset.detector, input.checked]));
+function updateSettingsStatus() {
+  const enabled = detectors.filter(item => item.checked).length;
+  const all = detectors.length;
+  $('detection-summary').textContent = enabled === all ? t('settings.all') : t('settings.count', { enabled, total: all });
+  $('detection-settings').classList.toggle('has-disabled',enabled < all);
+  $('enable-all').disabled = enabled === all;
+}
+
+let lastResult = {text:'',hits:[]};
+let importedTextFile = null;
+let fileReadVersion = 0;
+const textFileInput = $('text-file');
+const fileStatus = $('text-file-status');
+let fileError = null;
+let copyFeedback = null;
+function showFileStatus(error = null) {
+  fileError = error;
+  const isError = Boolean(error);
+  const message = error ? translatedError(error, i18n) : '';
+  fileStatus.textContent = message;
+  fileStatus.classList.toggle('is-error', isError);
+  fileStatus.hidden = !message;
+}
+function setImportedTextFile(file) {
+  importedTextFile = file;
+  $('text-file-info').hidden = !file;
+  $('text-file-name').textContent = file ? file.name : '';
+}
+function clearImportedTextFile() {
+  fileReadVersion++;
+  textFileInput.value = '';
+  setImportedTextFile(null);
+  showFileStatus();
+}
+$('text-pick').addEventListener('click', () => textFileInput.click());
+textFileInput.addEventListener('change', async () => {
+  const selected = textFileInput.files?.[0];
+  if (!selected) return;
+  const version = ++fileReadVersion;
+  try {
+    const extension = inspectTextFile(selected);
+    const content = decodeTextBuffer(await selected.arrayBuffer());
+    if (version !== fileReadVersion) return;
+    if (extension === 'json') validateJsonFile(content);
+    setImportedTextFile({ name: selected.name, extension });
+    input.value = content;
+    input.scrollTop = 0;
+    input.scrollLeft = 0;
+    showFileStatus();
+    update();
+  } catch(error) {
+    if (version !== fileReadVersion) return;
+    showFileStatus(error);
+  } finally {
+    if (version === fileReadVersion) textFileInput.value = '';
+  }
+});
+function update() {
+  lastResult = sanitize(input.value,detectorOptions());
+  output.value = lastResult.text;
+  copyFeedback = null;
+  renderText();
+}
+function renderText() {
+  const original = input.value;
+  // During CPF typing, warn rather than pretending the partial number is safe.
+  const incompleteCPF = $('det-cpf').checked && /\bCPF\s*[:=#-]?\s*(?:\d[. -]?){1,10}(?=\s|$)/i.test(original);
+  const noneEnabled = detectors.every(item => !item.checked);
+  const brokenJson = importedTextFile?.extension === 'json' && !sanitizedJsonIsValid(lastResult.text);
+  const canShare = Boolean(lastResult.text) && !incompleteCPF && !noneEnabled && !brokenJson;
+  $('copy').disabled = !canShare;
+  $('download-text').disabled = !canShare;
+  $('copy').textContent = t(copyFeedback === 'copied' ? 'text.copied' : copyFeedback === 'manual' ? 'text.selectCopy' : 'text.copy');
+  $('char-count').textContent = t('text.characters', { count: original.length });
+  const n = lastResult.hits.length;
+  $('original-status').textContent = incompleteCPF ? t('text.incompleteCPF') : n ? t('text.highlights', { count: n }) : t(original ? 'text.noPatterns' : 'text.waiting');
+  $('protected-status').textContent = t(noneEnabled ? 'text.disabled' : incompleteCPF ? 'text.reviewCPF' : brokenJson ? 'text.invalidJSON' : n ? 'text.replacements' : 'text.noReplacements', { count: n });
+  const categories = [...new Set(lastResult.hits.map(hit => t('kind.' + hit.kind)))];
+  const detailsKey = brokenJson ? 'text.jsonHelp' : noneEnabled ? 'text.disabledHelp' : incompleteCPF ? 'text.cpfHelp' : copyFeedback === 'manual' ? 'text.clipboardHelp' : n ? 'text.detected' : original ? 'text.noPatternsHelp' : 'text.noAnalysis';
+  $('details').textContent = t(detailsKey, { count: n, categories: categories.join(', ') });
+  let html='',pos=0;
+  for(const h of lastResult.hits){html+=escapeHTML(original.slice(pos,h.start));html+=`<mark title="${escapeHTML(t('kind.' + h.kind))}">${escapeHTML(h.original)}</mark>`;pos=h.end;}
+  $('highlight').innerHTML = html+escapeHTML(original.slice(pos))+'\n';
+  syncScroll();
+}
+function syncScroll(){ $('highlight').scrollTop = input.scrollTop; $('highlight').scrollLeft = input.scrollLeft; }
+input.addEventListener('input',update);
+input.addEventListener('scroll',syncScroll);
+for(const toggle of detectors) toggle.addEventListener('change',()=>{updateSettingsStatus();update();});
+$('enable-all').addEventListener('click',()=>{for(const toggle of detectors) toggle.checked=true;updateSettingsStatus();update();});
+$('clear').addEventListener('click',()=>{clearImportedTextFile();input.value='';output.value='';input.scrollTop=0;input.scrollLeft=0;update();input.focus();});
+$('example').addEventListener('click',()=>{
+  clearImportedTextFile();
+  input.value='OPENAI_API_KEY=sk-proj-EXEMPLO_TOKEN_DE_TESTE12345\nDATABASE_URL=postgresql://admin:senha_ficticia@db.exemplo.invalid:5432/producao\nContato: contato@empresa.com.br\nTelefone: (48) 98888-7777\nEndereço: Rua das Flores, 123, Centro - São José/SC, CEP 88100-000\nCPF: 123.456.789-09\nServidor: 10.20.30.40\nAuthorization: Bearer token_de_exemplo_1234567890';
+  update();input.focus();
+});
+$('download-text').addEventListener('click', () => {
+  if ($('download-text').disabled || !output.value) return;
+  const extension = importedTextFile?.extension || 'txt';
+  const mime = extension === 'json' ? 'application/json' : extension === 'md' ? 'text/markdown' : 'text/plain';
+  const blob = new Blob([output.value], { type: `${mime};charset=utf-8` });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = protectedTextFilename(importedTextFile?.name, { suffix: t('file.suffix'), fallbackStem: t('file.stem') });
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+$('copy').addEventListener('click',async()=>{
+  if(!output.value) return;
+  try {
+    if (!navigator.clipboard?.writeText) throw new Error('Clipboard API unavailable');
+    await navigator.clipboard.writeText(output.value);
+    copyFeedback = 'copied';
+    renderText();
+  } catch {
+    output.focus();output.select();
+    copyFeedback = 'manual';
+    renderText();
+  }
+});
+updateSettingsStatus();
+update();
+
+i18n.subscribe(() => {
+  translatePage(i18n, document);
+  applyTheme(document.documentElement.dataset.theme);
+  updateSettingsStatus();
+  showFileStatus(fileError);
+  renderText();
+});
+
+/** Produce an entirely NEW image-only PDF from JPEG page pixels. Never copy PDF objects. */
+function buildRasterPDF(pages) {
+  if (!Array.isArray(pages) || !pages.length) throw new LocalizedError('pdf.noPages');
+  const encoder = new TextEncoder();
+  const pieces = [];
+  const offsets = [0];
+  let size = 0;
+  const bytes = str => encoder.encode(str);
+  function add(value) { const item = typeof value === 'string' ? bytes(value) : value; pieces.push(item); size += item.length; }
+  function object(id, parts) {
+    offsets[id] = size;
+    add(`${id} 0 obj\n`);
+    for (const part of parts) add(part);
+    add('\nendobj\n');
+  }
+  // PDF header with a binary comment, encoded separately to keep offsets exact.
+  add('%PDF-1.4\n%SAFEPASTE\n');
+  const count = pages.length;
+  const kids = pages.map((_, i) => `${3 + i * 3} 0 R`).join(' ');
+  object(1, ['<< /Type /Catalog /Pages 2 0 R >>']);
+  object(2, [`<< /Type /Pages /Count ${count} /Kids [${kids}] >>`]);
+  pages.forEach((page, i) => {
+    const pageId = 3 + i * 3;
+    const imageId = pageId + 1;
+    const contentId = pageId + 2;
+    const { jpeg, pixelWidth, pixelHeight, width, height } = page;
+    if (!(jpeg instanceof Uint8Array) || jpeg.length < 8 ||
+      jpeg[0] !== 0xff || jpeg[1] !== 0xd8 ||
+      ![pixelWidth, pixelHeight, width, height].every(v => Number.isFinite(v) && v > 0)) {
+      throw new LocalizedError('pdf.invalidPage', { page: i + 1 });
+    }
+    const w = Number(width.toFixed(3));
+    const h = Number(height.toFixed(3));
+    object(pageId, [
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${w} ${h}] /Resources << /XObject << /Im0 ${imageId} 0 R >> >> /Contents ${contentId} 0 R >>`
+    ]);
+    object(imageId, [
+      `<< /Type /XObject /Subtype /Image /Width ${Math.round(pixelWidth)} /Height ${Math.round(pixelHeight)} ` +
+      `/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`,
+      jpeg,
+      '\nendstream'
+    ]);
+    const drawing = `q\n${w} 0 0 ${h} 0 0 cm\n/Im0 Do\nQ\n`;
+    object(contentId, [`<< /Length ${bytes(drawing).length} >>\nstream\n`, drawing, 'endstream']);
+  });
+  const xref = size;
+  const total = 2 + count * 3;
+  add(`xref\n0 ${total + 1}\n0000000000 65535 f \n`);
+  for (let id = 1; id <= total; id++) add(`${String(offsets[id]).padStart(10,'0')} 00000 n \n`);
+  add(`trailer\n<< /Size ${total + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  const result = new Uint8Array(size); let p = 0;
+  for (const chunk of pieces) { result.set(chunk, p); p += chunk.length; }
+  return result;
+}
+function dataUrlToJpeg(uri) {
+  if (!uri.startsWith('data:image/jpeg;base64,')) throw new LocalizedError('pdf.jpeg');
+  const data = atob(uri.slice('data:image/jpeg;base64,'.length));
+  const result = new Uint8Array(data.length);
+  for (let i = 0; i < data.length; i++) result[i] = data.charCodeAt(i);
+  return result;
+}
+
+/** SafePaste PDF beta: client-side rasterization, automatic candidates, manual review. */
+const pdfUI = id => document.getElementById(id);
+const pdfState = { document: null, loadingTask: null, pages: [], index: 0, pdfjs: null, manualMode: true, previewScale: 1, dragging: null, busy: false, sourceName: '', previewTask: null };
+const MAX_PDF_BYTES = 25 * 1024 * 1024, MAX_PAGES = 30;
+const PDFJS_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/build/pdf.mjs';
+const PDFJS_WORKER_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/build/pdf.worker.mjs';
+let pdfjsPromise;
+const elPdf = Object.fromEntries([
+  'file','pick','empty','ready','name','stats','message','warning','page','prev','next',
+  'canvas','overlay','remove-layer','undo','clear','restore-auto','export','reviewed','raster','progress','restart'
+].map(k => [k,pdfUI('pdf-'+k)]));
+
+let pdfFeedback = { key: 'pdf.empty', values: {}, bad: false };
+function renderPDFMessage() {
+  const { key, values, bad } = pdfFeedback;
+  const reason = values.error ? translatedError(values.error, i18n) : '';
+  const message = t(key, { ...values, reason }) + (values.previous ? t('pdf.previousOpen') : '');
+  for (const el of [elPdf.message, pdfUI('pdf-ready-message')]) {
+    if (!el) continue;
+    el.textContent = message;
+    el.classList.toggle('pdf-error', bad);
+  }
+}
+function pdfMessage(key, values = {}, bad = false) {
+  pdfFeedback = { key, values, bad };
+  renderPDFMessage();
+}
+function switchMode(mode) {
+  const isPDF = mode === 'pdf';
+  pdfUI('text-mode').hidden = isPDF;
+  pdfUI('pdf-mode').hidden = !isPDF;
+  pdfUI('mode-text').classList.toggle('active', !isPDF);
+  pdfUI('mode-pdf').classList.toggle('active', isPDF);
+  pdfUI('mode-text').setAttribute('aria-selected', String(!isPDF));
+  pdfUI('mode-pdf').setAttribute('aria-selected', String(isPDF));
+}
+pdfUI('mode-text').addEventListener('click', () => switchMode('text'));
+pdfUI('mode-pdf').addEventListener('click', () => switchMode('pdf'));
+function normalizeRect(r) {
+  const x = Math.min(r.x, r.x + r.w), y = Math.min(r.y, r.y + r.h);
+  return {x: Math.max(0, x), y: Math.max(0,y), w: Math.abs(r.w), h: Math.abs(r.h)};
+}
+function boundRect(r, pw, ph) {
+  const x = Math.max(0, Math.min(pw, r.x - 3));
+  const y = Math.max(0, Math.min(ph, r.y - 3));
+  const x2 = Math.max(x, Math.min(pw, r.x + r.w + 3));
+  const y2 = Math.max(y, Math.min(ph, r.y + r.h + 3));
+  return {x, y, w:x2-x, h:y2-y};
+}
+function itemBox(item, viewport, pdfjs) {
+  const transform = pdfjs.Util.transform(viewport.transform, item.transform);
+  const fontHeight = Math.max(4, Math.hypot(transform[2], transform[3]));
+  const w = Math.max(2, Math.abs(item.width));
+  const h = Math.max(fontHeight, Math.abs(item.height), 6);
+  // Conservative: cover entire text run containing the sensitive substring.
+  const x = transform[4], y = transform[5] - h;
+  if (Math.abs(transform[1]) > 0.025 || Math.abs(transform[2]) > 0.025) return null;
+  return boundRect({x,y,w,h:h*1.25}, viewport.width,viewport.height);
+}
+function extractPageSegments(items, viewport, pdfjs) {
+  let value = '';
+  const segments=[];
+  let prev = null;
+  for(const item of items) {
+    if(typeof item.str !== 'string' || !item.str) continue;
+    const box = itemBox(item,viewport,pdfjs);
+    const gap = prev && box && Math.abs(prev.y-box.y) < 5 ? box.x - (prev.x+prev.w) : 100;
+    const sep = prev ? (gap < 2 && gap > -4 ? '' : ' ') : '';
+    value += sep;
+    const start=value.length;
+    value += item.str;
+    segments.push({start,end:value.length,box});
+    prev=box;
+    if(item.hasEOL) {value+='\n';prev=null;}
+  }
+  return {value,segments};
+}
+function findPDFHits(info) {
+  const detection = detectorOptions();
+  const result = sanitize(info.value, detection);
+  const boxes=[];
+  for (const hit of result.hits) {
+    for (const seg of info.segments) {
+      if (seg.box && hit.start < seg.end && hit.end > seg.start) {
+        if (!boxes.some(b=>b.segment===seg)) boxes.push({segment:seg, ...seg.box});
+      }
+    }
+  }
+  return { boxes: boxes.map(({segment,...rect}) => rect), hitCount:result.hits.length };
+}
+function updatePDFDetections() {
+  if(!pdfState.pages.length) return;
+  for(const page of pdfState.pages) {
+    const found=findPDFHits(page.text);
+    page.auto=found.boxes;
+    page.hitCount=found.hitCount;
+    page.viewed=false;
+  }
+  invalidateReview();
+  pdfState.pages[pdfState.index].viewed=true;
+  updatePDFMeta(); drawOverlay();
+}
+for (const input of document.querySelectorAll('[data-detector]')) input.addEventListener('change', updatePDFDetections);
+pdfUI('enable-all').addEventListener('click', () => setTimeout(updatePDFDetections,0));
+// A removed automatic suggestion stays removed even if detections are recalculated.
+// Stable geometry keys also avoid relying on indexes that can change by category.
+function autoRectKey(r) {return [r.x,r.y,r.w,r.h].map(n=>Math.round(n*100)).join(':');}
+function visibleAuto(page) {return page.auto.filter(r=>!page.dismissedAuto.has(autoRectKey(r)));}
+function totalBoxes() {return pdfState.pages.reduce((n,p)=>n+visibleAuto(p).length+p.manual.length,0);}
+function removedAutoCount() {return pdfState.pages.reduce((n,p)=>n+p.auto.filter(r=>p.dismissedAuto.has(autoRectKey(r))).length,0);}
+function invalidateReview() {elPdf.reviewed.checked=false;}
+
+function updatePDFMeta() {
+  const pages=pdfState.pages;
+  if (!pages.length) return;
+  const current=pages[pdfState.index];
+  const unviewed=pages.filter(p=>!p.viewed).length;
+  const manually=pages.reduce((n,p)=>n+p.manual.length,0);
+  const activeAutomatic=pages.reduce((n,p)=>n+visibleAuto(p).length,0);
+  const removed=removedAutoCount();
+  elPdf.stats.textContent=t('pdf.stats', { count: pages.length, automatic: activeAutomatic, manual: manually }) + (removed ? t('pdf.removedCount', { count: removed }) : '');
+  elPdf.page.textContent=t('pdf.page', { page: pdfState.index+1, total: pages.length });
+  elPdf.prev.disabled=pdfState.index===0 || pdfState.busy;
+  elPdf.next.disabled=pdfState.index===pages.length-1 || pdfState.busy;
+  elPdf.undo.disabled=pdfState.busy || !current.manual.length;
+  elPdf.clear.disabled=pdfState.busy || !pages.some(p=>p.manual.length);
+  elPdf['restore-auto'].disabled=pdfState.busy || !removed;
+  elPdf.export.disabled=pdfState.busy || !totalBoxes() || !!unviewed || !elPdf.reviewed.checked || !elPdf.raster.checked;
+  const hasNoText=!current.text.value.trim();
+  const activeOnPage=visibleAuto(current).length;
+  const discardedOnPage=current.auto.length-activeOnPage;
+  elPdf.warning.textContent = t(hasNoText ? 'pdf.noText' : activeOnPage ? 'pdf.automatic' : discardedOnPage ? 'pdf.discarded' : 'pdf.noPatterns', { count: activeOnPage });
+  if (removed) elPdf.warning.textContent += t('pdf.removedWarning', { count: removed });
+  if (unviewed) elPdf.warning.textContent += t('pdf.unviewed', { count: unviewed });
+  elPdf.warning.classList.toggle('pdf-warning-strong',hasNoText || !activeOnPage || !!unviewed || !!removed);
+}
+async function ensurePdfjs() {
+  if(!pdfjsPromise) pdfjsPromise = import(PDFJS_URL).then(lib => {
+    lib.GlobalWorkerOptions.workerSrc=PDFJS_WORKER_URL;
+    return lib;
+  }).catch(error => {pdfjsPromise=null;throw new LocalizedError('pdf.readerError');});
+  return pdfjsPromise;
+}
+function setBusy(busy) {
+  pdfState.busy=busy;
+  elPdf.pick.disabled=busy;
+  elPdf.file.disabled=busy;
+  elPdf.restart.disabled=busy;
+  updatePDFMeta();
+}
+function pageViewportFor(canvas,base,limit=1500) {
+  const displayWidth=Math.min(790, Math.max(250, elPdf.canvas.parentElement.parentElement.clientWidth-42));
+  const scale=Math.min(1.7, displayWidth/base.width, limit/base.width, limit/base.height);
+  return Math.max(0.15,scale);
+}
+async function showPDFPage(index, allowWhileBusy = false) {
+  if(!pdfState.document || (pdfState.busy && !allowWhileBusy)) return;
+  pdfState.index=index;
+  const info=pdfState.pages[index];
+  const page=await pdfState.document.getPage(index+1);
+  const scale=pageViewportFor(elPdf.canvas,info);
+  const viewport=page.getViewport({scale});
+  pdfState.previewScale=scale;
+  elPdf.canvas.width=Math.ceil(viewport.width);
+  elPdf.canvas.height=Math.ceil(viewport.height);
+  elPdf.overlay.width=elPdf.canvas.width;
+  elPdf.overlay.height=elPdf.canvas.height;
+  elPdf['remove-layer'].style.width=elPdf.canvas.width+'px';
+  elPdf['remove-layer'].style.height=elPdf.canvas.height+'px';
+  elPdf.canvas.style.width=elPdf.overlay.style.width=elPdf.canvas.width+'px';
+  elPdf.canvas.style.height=elPdf.overlay.style.height=elPdf.canvas.height+'px';
+  const ctx=elPdf.canvas.getContext('2d',{alpha:false});
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,elPdf.canvas.width,elPdf.canvas.height);
+  await page.render({canvas:elPdf.canvas,viewport}).promise;
+  info.viewed=true;
+  drawOverlay();updatePDFMeta();
+}
+/**
+ * PDF.js returns a PDFDocumentLoadingTask from getDocument().
+ * Its destroy() is the supported resource-cleanup API; do not assume
+ * the resolved PDFDocumentProxy exposes destroy() in every PDF.js version.
+ */
+async function disposePDFTask(task) {
+  if(!task || typeof task.destroy !== 'function') return;
+  try { await task.destroy(); }
+  catch(error) { console.warn('Could not release the previous PDF reader:', error); }
+}
+async function loadPDF(file) {
+  if(!file || pdfState.busy) return;
+  if(file.size>MAX_PDF_BYTES) {pdfMessage('pdf.size', {}, true);return;}
+  if(file.type && file.type!=='application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {pdfMessage('pdf.select', {}, true);return;}
+
+  let newTask = null;
+  let previous = null;
+  let installed = false;
+  setBusy(true);
+  pdfMessage('pdf.preparing');
+  // Keep the previous document visible until the new one is fully ready.
+  // If parsing fails, users can still review and export the previous file.
+  try {
+    const lib=await ensurePdfjs();
+    const buffer=new Uint8Array(await file.arrayBuffer());
+    pdfMessage('pdf.reading');
+    // The PDF bytes remain local. Retain the loading task for proper cleanup.
+    newTask=lib.getDocument({data:buffer,isEvalSupported:false,useSystemFonts:true,stopAtErrors:true});
+    const documentPDF=await newTask.promise;
+    if(documentPDF.numPages>MAX_PAGES) throw new LocalizedError('pdf.pageLimit');
+
+    const all=[];
+    for(let i=1;i<=documentPDF.numPages;i++) {
+      pdfMessage('pdf.analyzing', { page: i, total: documentPDF.numPages });
+      const page=await documentPDF.getPage(i);
+      const viewport=page.getViewport({scale:1});
+      if(viewport.width>6000 || viewport.height>6000) throw new LocalizedError('pdf.pageSize');
+      const tc=await page.getTextContent();
+      const text=extractPageSegments(tc.items,viewport,lib);
+      const found=findPDFHits(text);
+      all.push({width:viewport.width,height:viewport.height,text,auto:found.boxes,dismissedAuto:new Set(),hitCount:found.hitCount,manual:[],viewed:false});
+    }
+
+    previous={
+      document:pdfState.document,loadingTask:pdfState.loadingTask,
+      pdfjs:pdfState.pdfjs,pages:pdfState.pages,index:pdfState.index,
+      sourceName:pdfState.sourceName, reviewed:elPdf.reviewed.checked, raster:elPdf.raster.checked
+    };
+    pdfState.document=documentPDF;pdfState.loadingTask=newTask;
+    pdfState.pdfjs=lib;pdfState.pages=all;pdfState.index=0;
+    pdfState.sourceName=file.name;pdfState.dragging=null;
+    elPdf.name.textContent=file.name;
+    elPdf.reviewed.checked=false;elPdf.raster.checked=false;
+    elPdf.empty.hidden=true;elPdf.ready.hidden=false;
+    // Rendering is part of the replacement transaction: if it fails,
+    // restore the previously opened document instead of leaving a broken UI.
+    await showPDFPage(0,true);
+    installed=true;
+    pdfMessage('pdf.ready');
+    await disposePDFTask(previous.loadingTask);
+  } catch(err) {
+    console.error('PDF:',err);
+    if(previous && !installed) {
+      pdfState.document=previous.document;pdfState.loadingTask=previous.loadingTask;
+      pdfState.pdfjs=previous.pdfjs;pdfState.pages=previous.pages;
+      pdfState.index=previous.index;pdfState.sourceName=previous.sourceName;
+      pdfState.dragging=null;
+      elPdf.name.textContent=previous.sourceName;
+      elPdf.reviewed.checked=previous.reviewed;elPdf.raster.checked=previous.raster;
+      elPdf.empty.hidden=!!previous.document;
+      elPdf.ready.hidden=!previous.document;
+      if(previous.document) {
+        try { await showPDFPage(previous.index,true); }
+        catch(restoreErr) { console.warn('Could not restore the previous preview:',restoreErr); }
+      }
+    }
+    if(newTask && !installed) await disposePDFTask(newTask);
+    pdfMessage('pdf.openError', { error: err, previous: Boolean(pdfState.document) }, true);
+  } finally {
+    setBusy(false);
+  }
+}
+// Clear the file input even when selecting the same PDF again.
+elPdf.file.addEventListener('change',()=>{
+  const file=elPdf.file.files?.[0];
+  elPdf.file.value='';
+  void loadPDF(file);
+});
+elPdf.pick.addEventListener('click',()=>elPdf.file.click());
+elPdf.restart.addEventListener('click',()=>{elPdf.file.value='';elPdf.file.click();});
+elPdf.prev.addEventListener('click',()=>showPDFPage(pdfState.index-1));
+elPdf.next.addEventListener('click',()=>showPDFPage(pdfState.index+1));
+function drawOverlay() {
+  const ctx=elPdf.overlay.getContext('2d');
+  ctx.clearRect(0,0,elPdf.overlay.width,elPdf.overlay.height);
+  const page=pdfState.pages[pdfState.index]; if(!page) return;
+  for(const r of visibleAuto(page)) drawRect(ctx,r,'rgba(31,45,36,.72)',pdfState.previewScale);
+  for(const r of page.manual) drawRect(ctx,r,'rgba(32,49,39,.8)',pdfState.previewScale);
+  if(pdfState.dragging) {
+    const r=normalizeRect(pdfState.dragging);
+    drawRect(ctx,r,'rgba(41,129,76,.55)',pdfState.previewScale);
+  }
+  renderRemoveButtons(page);
+}
+function renderRemoveButtons(page) {
+  const layer=elPdf['remove-layer'];
+  layer.replaceChildren();
+  const buttons=[];
+  for(const r of visibleAuto(page)) buttons.push({rect:r,automatic:true});
+  page.manual.forEach((r,index)=>buttons.push({rect:r,automatic:false,index}));
+  for(const item of buttons) {
+    const {rect:r,automatic,index}=item;
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='pdf-remove-rect';
+    button.textContent='×';
+    button.title=t(automatic ? 'pdf.removeAuto' : 'pdf.removeManual');
+    button.setAttribute('aria-label',t('pdf.removeLabel', { action: button.title, page: pdfState.index+1 }));
+    const x=(r.x+r.w)*pdfState.previewScale-18;
+    const y=r.y*pdfState.previewScale+2;
+    button.style.left=Math.max(0,Math.min(elPdf.overlay.width-22,x))+'px';
+    button.style.top=Math.max(0,Math.min(elPdf.overlay.height-22,y))+'px';
+    button.addEventListener('pointerdown',e=>e.stopPropagation());
+    button.addEventListener('click',event=>{
+      event.stopPropagation();
+      if(pdfState.busy)return;
+      if(automatic) page.dismissedAuto.add(autoRectKey(r));
+      else page.manual.splice(index,1);
+      invalidateReview();
+      drawOverlay();updatePDFMeta();
+    });
+    layer.appendChild(button);
+  }
+}
+function drawRect(ctx,r,color,scale) {
+  ctx.fillStyle=color;
+  ctx.fillRect(r.x*scale,r.y*scale,r.w*scale,r.h*scale);
+  ctx.strokeStyle='rgba(241,247,241,.9)';ctx.lineWidth=1;
+  ctx.strokeRect(r.x*scale,r.y*scale,r.w*scale,r.h*scale);
+}
+function pdfCursor(event) {
+  const b=elPdf.overlay.getBoundingClientRect();
+  const scaleX=elPdf.overlay.width/b.width, scaleY=elPdf.overlay.height/b.height;
+  return {x:((event.clientX-b.left)*scaleX)/pdfState.previewScale,y:((event.clientY-b.top)*scaleY)/pdfState.previewScale};
+}
+elPdf.overlay.addEventListener('pointerdown',event=>{
+  if(pdfState.busy || !pdfState.document) return;
+  event.preventDefault();
+  const point=pdfCursor(event);
+  pdfState.dragging={x:point.x,y:point.y,w:0,h:0};
+  elPdf.overlay.setPointerCapture(event.pointerId);
+});
+elPdf.overlay.addEventListener('pointermove',event=>{
+  if(!pdfState.dragging)return;
+  const point=pdfCursor(event);
+  pdfState.dragging.w=point.x-pdfState.dragging.x;
+  pdfState.dragging.h=point.y-pdfState.dragging.y;
+  drawOverlay();
+});
+function finishRect(event){
+  if(!pdfState.dragging)return;
+  const page=pdfState.pages[pdfState.index];
+  const box=normalizeRect(pdfState.dragging);
+  pdfState.dragging=null;
+  if(box.w>=3 && box.h>=3) {page.manual.push(boundRect(box,page.width,page.height));invalidateReview();}
+  drawOverlay();updatePDFMeta();
+}
+elPdf.overlay.addEventListener('pointerup',finishRect);
+elPdf.overlay.addEventListener('pointercancel',()=>{pdfState.dragging=null;drawOverlay();});
+elPdf.undo.addEventListener('click',()=>{pdfState.pages[pdfState.index].manual.pop();invalidateReview();drawOverlay();updatePDFMeta();});
+elPdf.clear.addEventListener('click',()=>{for(const p of pdfState.pages)p.manual=[];invalidateReview();drawOverlay();updatePDFMeta();});
+elPdf['restore-auto'].addEventListener('click',()=>{for(const p of pdfState.pages)p.dismissedAuto.clear();invalidateReview();drawOverlay();updatePDFMeta();});
+for(const el of [elPdf.reviewed, elPdf.raster]) el.addEventListener('change',updatePDFMeta);
+
+async function generatePDF() {
+  if(!pdfState.document || pdfState.busy || !totalBoxes() || pdfState.pages.some(p=>!p.viewed) || !elPdf.reviewed.checked || !elPdf.raster.checked)return;
+  if(!window.confirm(t('pdf.confirm')))return;
+  setBusy(true);
+  const pages=[];
+  try {
+    for(let i=0;i<pdfState.pages.length;i++) {
+      const p=pdfState.pages[i];
+      pdfMessage('pdf.generating', { page: i+1, total: pdfState.pages.length });
+      const page=await pdfState.document.getPage(i+1);
+      const s=Math.min(2, 2800/p.width, 3500/p.height);
+      const scale=Math.max(.1,s);
+      const viewport=page.getViewport({scale});
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
+      const context=canvas.getContext('2d',{alpha:false});
+      context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);
+      await page.render({canvas,viewport}).promise;
+      // Paint opaque black directly into rendered pixels (NOT a removable PDF annotation).
+      context.fillStyle='#000';
+      for(const r of [...visibleAuto(p),...p.manual]) context.fillRect(Math.max(0,r.x*scale),Math.max(0,r.y*scale),Math.min(canvas.width-r.x*scale,r.w*scale),Math.min(canvas.height-r.y*scale,r.h*scale));
+      pages.push({jpeg:dataUrlToJpeg(canvas.toDataURL('image/jpeg',.94)),pixelWidth:canvas.width,pixelHeight:canvas.height,width:p.width,height:p.height});
+      canvas.width=0;canvas.height=0;
+    }
+    const result=buildRasterPDF(pages);
+    const blob=new Blob([result],{type:'application/pdf'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=t('file.pdfName');
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+    pdfMessage('pdf.generated');
+  } catch(e) {
+    console.error('PDF export:',e);
+    pdfMessage('pdf.exportError', { error: e }, true);
+  } finally {setBusy(false);}
+}
+elPdf.export.addEventListener('click',generatePDF);
+
+i18n.subscribe(() => {
+  renderPDFMessage();
+  updatePDFMeta();
+  const page = pdfState.pages[pdfState.index];
+  if (page) renderRemoveButtons(page);
+});
+renderPDFMessage();
+
+</script>
+</body>
+</html>

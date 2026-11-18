@@ -1,0 +1,7 @@
+{
+  "api_token": "SEGREDO_FICTICIO_123456",
+  "cpf": "123.456.789-09",
+  "telefone": "(48) 98888-7777",
+  "endereco": "Rua das Flores, 123",
+  "ambiente": "teste"
+}

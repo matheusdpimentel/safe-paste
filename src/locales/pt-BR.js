@@ -4,7 +4,7 @@ export const ptBR = {
   "ui.eyebrow": "FERRAMENTA LOCAL",
   "ui.headingFirst": "Proteja antes",
   "ui.headingSecond": "de compartilhar",
-  "ui.intro": "Oculte tokens, credenciais e dados pessoais antes de enviar logs, configurações ou trechos de código para uma IA.",
+  "ui.intro": "Identifique e oculte dados sensíveis antes de compartilhá-los com uma IA, promovendo mais privacidade, segurança e boas práticas alinhadas à LGPD.",
   "ui.fileType": "Tipo de arquivo",
   "ui.textTab": "Texto e código",
   "ui.pdfTab": "· experimental",

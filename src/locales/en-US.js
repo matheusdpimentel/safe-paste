@@ -4,7 +4,7 @@ export const enUS = {
   "ui.eyebrow": "LOCAL TOOL",
   "ui.headingFirst": "Protect before",
   "ui.headingSecond": "you share",
-  "ui.intro": "Hide tokens, credentials and personal data before sending logs, configuration or code snippets to an AI.",
+  "ui.intro": "Detect and hide sensitive data before sharing it with AI, promoting privacy, security, and data protection practices aligned with Brazil's LGPD.",
   "ui.fileType": "File type",
   "ui.textTab": "Text and code",
   "ui.pdfTab": "· experimental",
